@@ -3,15 +3,14 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
+import re
 
-# Path to your ChromeDriver
-driver_path = r"C:\Program Files\Webdrivers\chromedriver-win64\chromedriver.exe"
-
-# Start Selenium browser
-service = Service(driver_path)
+# Start selenium browser
+service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
 options.add_argument("--window-size=1920,1080")
@@ -32,7 +31,13 @@ while True:
             print("Incomplete Data")
             continue
 
-        drug_name = cells[0].get_text(strip=True)
+        # Drug name
+        link = cells[0].find("a")["href"]
+        url_slug = link.rstrip("/").split("/")[-1]
+        url_slug = re.sub(r"-\d+$", "", url_slug)  
+        drug_name = url_slug.replace("-", " ").strip()
+
+
         brand_name = cells[1].get_text(strip=True)
         generic_name = cells[2].get_text(strip=True)
 
@@ -41,7 +46,12 @@ while True:
 
         therapeutic_area = cells[4].get_text(strip=True)
         recommendation = cells[5].get_text(strip=True)
+
+        # Normalizing status values
         status = cells[6].get_text(strip=True)
+        if status.lower() == "completed":
+            status = "Complete"
+
         submission_date = cells[7].get_text(strip=True)
         recommendation_date = cells[8].get_text(strip=True)
         project_number = cells[9].get_text(strip=True)
@@ -80,4 +90,4 @@ while True:
         break
 
 df = pd.DataFrame(data)
-df.to_csv("cda_amc_data.csv", index=False)
+df.to_csv("cda_amc_data.csv", index=False, encoding="utf-8-sig")
