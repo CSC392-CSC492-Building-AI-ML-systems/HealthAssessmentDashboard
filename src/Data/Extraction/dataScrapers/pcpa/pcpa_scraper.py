@@ -38,4 +38,4 @@ for row in rows:
 df = pd.DataFrame(data)
 
 # Save to CSV
-df.to_csv("pcpa_data.csv", index=False, encoding="utf-8")
+df.to_csv("pcpa_data.csv", index=False, encoding="utf-8-sig")
