@@ -20,18 +20,19 @@ data = []
 for row in rows:
     cells = row.find_all("td")
     if len(cells) == 4:
-
         product = cells[0].get_text(strip=True)
         manufacturer = cells[1].get_text(strip=True)
         status = cells[2].get_text(strip=True)
         indication = cells[3].get_text(strip=True)
 
-        data.append({
-            "Product": product,
-            "Manufacturer": manufacturer,
-            "Status": status,
-            "Indication": indication
-        })
+        data.append(
+            {
+                "Product": product,
+                "Manufacturer": manufacturer,
+                "Status": status,
+                "Indication": indication,
+            }
+        )
 
 # Convert to a pandas DataFrame
 df = pd.DataFrame(data)
