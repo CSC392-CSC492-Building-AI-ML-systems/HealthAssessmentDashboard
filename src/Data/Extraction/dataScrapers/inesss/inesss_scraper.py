@@ -3,6 +3,7 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import pandas as pd
+import os
 
 nest_asyncio.apply()
 
@@ -13,7 +14,7 @@ HEADERS = {
 
 # 5 threads at a time
 CONCURRENT_REQUESTS = 5
-MAX_PAGES = 250
+MAX_PAGES = 1
 
 async def fetch_page(session, page_num):
     url = BASE_URL.format(page_num)
@@ -90,3 +91,11 @@ if __name__ == "__main__":
     scraped_data = asyncio.run(scrape_all_pages())
     df = pd.DataFrame(scraped_data)
     df.to_csv("inesss_data.csv", index=False, encoding="utf-8-sig")
+
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
+
+    target_dir = os.path.join(project_root, "Data/Preprocessing/Data/scrapedData/inesssDownloads")
+    os.makedirs(target_dir, exist_ok=True)
+
+    output_path = os.path.join(target_dir, "inesss_data.csv")
+    df.to_csv(output_path, index=False, encoding="utf-8-sig")
