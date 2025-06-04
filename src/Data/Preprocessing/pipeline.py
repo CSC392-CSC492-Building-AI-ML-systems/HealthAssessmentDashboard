@@ -11,19 +11,19 @@ def run_pipeline():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     summaries = []
 
-    with open(INPUT_CSV, newline="", encoding="utf-8") as csvfile:
+    with open(INPUT_CSV, newline="", encoding="utf-8-sig") as csvfile:
         print(f"📂 Reading input CSV: {INPUT_CSV}")
         reader = csv.DictReader(csvfile)
+        print(f"Reader: {reader.fieldnames}")
         for row in reader:
-            print(f"🔍 Processing row: {row['Project Number']} - {row['Drug Name']}")
-            if row["Status"] in ("Completed", "Complete"):
-                continue
+            print(f"🔍 Processing row: {row['Project Number']} - {row['Title']}")
             try:
-                print(f"🔍 Processing row: {row['Project Number']} - {row['Drug Name']}")
-                links = ast.literal_eval(row["PDF Links"])
+                print(f"🔍 Processing row: {row}")
+                print(f"🔍 Processing row: {row['Project Number']} - {row['Title']}")
+                links = [link.strip() for link in row["PDF Links"].split(";") if link.strip()]
+                print(f"Links found: {links}")
                 project_id = row["Project Number"]
-                drug_name = row["Drug Name"]
-                print(f"\n📄 Processing: {project_id} - {drug_name}")
+                generic_name = row["Generic Name"]
 
                 pdf_files = download_pdfs(links, project_id)
                 combined_text = text_from_pdfs(pdf_files)
@@ -32,16 +32,19 @@ def run_pipeline():
                     print(f"No text extracted for {project_id}")
                     continue
 
-                summary = gpt_analyzer(combined_text)
+                summary = json.loads(gpt_analyzer(combined_text))
+                print(f"Summary for {project_id}: {summary}")
 
                 if summary:
-                    summaries.append(
-                        {
-                            "Project Number": project_id,
-                            "Drug Name": drug_name,
-                            "Summary": summary,
-                        }
-                    )
+                    tmp = {
+                        "Project ID": project_id,
+                        "Generic Name": generic_name,
+                        "Status": row["Status"],
+                    }
+                    for key, value in summary.items():
+                        tmp[key] = value
+                    summaries.append(tmp)
+                    break
 
             except Exception as e:
                 print(f"Failed on {row['Project Number']}: {e}")

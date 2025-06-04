@@ -40,20 +40,28 @@ def gpt_analyzer(long_text):
 
     # Final summary combining all partial summaries
     final_prompt = f"""
-You are an assistant that combines partial summaries of a drug recommendation report into one structured summary.
+You are an assistant that combines partial summaries of a drug recommendation report into one structured summary and extracts structured data from the summaries.
 
-Each summary below corresponds to a chunk of the same drug's documents. Merge and deduplicate them into a single structured output with the following fields:
-- Drug Name
-- Brand Name
-- Generic Name
-- Therapeutic Area
-- Use Case / Indication
-- Price Recommendation
-- Timeline of Approval (Submission Date, Recommendation Date)
-- Key Conditions or Restrictions
+Each summary below corresponds to a chunk of the same drug's documents. Merge and deduplicate them into a single structured output with the following fields and types:
+- "Drug Name": string
+- "Brand Name": string
+- "Generic Name": string
+- "Therapeutic Area": string
+- "Use Case / Indication": string (max 50 words, patient group + treatment intent)
+- "Price Recommendation": object with keys:
+  - "min": float (minimum suggested price if available)
+  - "max": float (maximum suggested price if available)
+  If only one price is found, use the same value for both min and max.
+- "Submission Date": string (in YYYY-MM-DD format)
+   If day is not available, use the first of the month.
+- "Recommendation Date": string (in YYYY-MM-DD format)
+   If day is not available, use the first of the month.
+- "Key Conditions or Restrictions": string (max 50 words, eligibility, clinical conditions)
 
 Partial Summaries:
 {chr(10).join(partial_summaries)}
+
+Only return the JSON object. Do not include any explanation or commentary.
 """
 
     try:

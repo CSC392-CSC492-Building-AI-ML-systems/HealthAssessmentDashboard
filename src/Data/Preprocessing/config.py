@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PDF_DIR = os.path.join(BASE_DIR, "Data", "pdfs")
 OUTPUT_DIR = os.path.join(BASE_DIR, "Data", "analyzedData")
 INPUT_CSV = os.path.join(
-    BASE_DIR, "Data", "scrapedData", "cdaDownloads", "cda_amc_data.csv"
+    BASE_DIR, "Data", "scrapedData", "cdaDownloads", "cda_amc_cleaned.csv"
 )
 
 # Configuration for PDF Processing

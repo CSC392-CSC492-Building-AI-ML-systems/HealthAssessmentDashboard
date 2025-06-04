@@ -59,20 +59,20 @@ def scrape_cda():
             recommendation_date = cells[8].get_text(strip=True)
             project_number = cells[9].get_text(strip=True)
 
-            data.append(
-                {
-                    "Drug Name": drug_name,
-                    "Brand Name": brand_name,
-                    "Generic Name": generic_name,
-                    "PDF Links": pdf_links,
-                    "Therapeutic Area": therapeutic_area,
-                    "Recommendation": recommendation,
-                    "Status": status,
-                    "Submission Date": submission_date,
-                    "Recommendation Date": recommendation_date,
-                    "Project Number": project_number,
-                }
-            )
+        data.append(
+            {
+                "Drug Name": drug_name,
+                "Brand Name": brand_name,
+                "Generic Name": generic_name,
+                "PDF Links": str(pdf_links),
+                "Therapeutic Area": therapeutic_area,
+                "Recommendation": recommendation,
+                "Status": status,
+                "Submission Date": submission_date,
+                "Recommendation Date": recommendation_date,
+                "Project Number": project_number,
+            }
+        )
 
         try:
             # Find and click the Next button using XPath targeting the span
