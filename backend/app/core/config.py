@@ -1,10 +1,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    app_name: str = "OurPATHS API"
+    app_name: str
     mongo_uri: str
-    mongo_db: str = "ourpaths_dev"
-    sqlite_path: str = "sqlite+aiosqlite:///./dev.db"
+    mongo_db: str
+    sqlite_path: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
