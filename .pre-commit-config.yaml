@@ -1,0 +1,18 @@
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        args: [--fast]
+        include: ^src/
+
+  - repo: local
+    hooks:
+      - id: update-requirements
+        name: Update requirements.txt with pip freeze
+        entry: bash scripts/update_requirements.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
