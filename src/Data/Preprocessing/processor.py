@@ -43,15 +43,15 @@ def gpt_analyzer(long_text):
 You are an assistant that combines partial summaries of a drug recommendation report into one structured summary and extracts structured data from the summaries.
 
 Each summary below corresponds to a chunk of the same drug's documents. Merge and deduplicate them into a single structured output with the following fields and types:
-- "Drug Name": string
 - "Brand Name": string
-- "Generic Name": string
-- "Therapeutic Area": string
 - "Use Case / Indication": string (max 50 words, patient group + treatment intent)
-- "Price Recommendation": object with keys:
-  - "min": float (minimum suggested price if available)
-  - "max": float (maximum suggested price if available)
-  If only one price is found, use the same value for both min and max.
+- "Price Recommendation": object with keys:  
+    - "min": float or null  
+    - "max": float or null  
+    Notes:
+      - If only one price is found, set both min and max to that value.
+      - If no price is mentioned, set both min and max to `null`.
+      - DO NOT write strings like "A reduction in price" or "Not specified".
 - "Submission Date": string (in YYYY-MM-DD format)
    If day is not available, use the first of the month.
 - "Recommendation Date": string (in YYYY-MM-DD format)

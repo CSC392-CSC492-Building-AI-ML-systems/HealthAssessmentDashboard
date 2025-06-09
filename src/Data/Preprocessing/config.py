@@ -14,10 +14,7 @@ SUMMARY_PROMPT_TEMPLATE = """
 You are an assistant that extracts structured data from drug recommendation documents.
 
 Given the following text from a drug recommendation PDF, summarize it into a dictionary format with these fields:
-- Drug Name
 - Brand Name
-- Generic Name
-- Therapeutic Area
 - Use Case / Indication
 - Price Recommendation
 - Timeline of Approval (Submission Date, Recommendation Date)
