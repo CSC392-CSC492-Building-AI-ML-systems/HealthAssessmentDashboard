@@ -1,3 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.log
+*.sqlite3
+*.db
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# dotenv
+.env
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -47,6 +65,8 @@ coverage/
 # Build artifacts
 build/
 dist/
+*.egg-info/
+=======
 *.egg-info/
 *.egg
 .eggs/
