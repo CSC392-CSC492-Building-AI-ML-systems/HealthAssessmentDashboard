@@ -22,9 +22,11 @@ const FeatureOverview: React.FC = () => {
             </p>
 
             {/* Features*/}
+            {/* TODO: maybe change bg colour to a darker shade of lilac/add shadow so it is not too bright. Potential accessibility concerns. */}
             <div className="flex flex-col lg:flex-row justify-center items-stretch gap-8">
                 {/* Dashboard */}
                 <div className="bg-[var(--feature-bg)] flex-1 p-6 rounded-2xl shadow-lg flex flex-col items-center text-center">
+                    {/* TODO: Image to be replaced with dashboard walkthrough gif */}
                     <Image
                         src="/dashboardpreview-dark.png"
                         alt="Analytical Dashboard"
@@ -40,6 +42,7 @@ const FeatureOverview: React.FC = () => {
 
                 {/* Chatbot */}
                 <div className="bg-[var(--feature-bg)] flex-1 p-6 rounded-2xl shadow-lg flex flex-col items-center text-center">
+                    {/* TODO: Image to be replaced with chatbot walkthrough gif */}
                     <Image
                         src="/chatbotpreview-dark.png"
                         alt="Chatbot Assistant"
