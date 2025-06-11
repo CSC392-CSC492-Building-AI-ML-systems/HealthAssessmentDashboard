@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #CCC9DC;         /* light mode background: soft grey */
+  --foreground: #0C1821;         /* light mode text: dark blue */
+
+  /* Branding colors */
+  --brand-dark: #0C1821;
+  --brand-light: #CCC9DC;
+  --button-red: #7E111A;
+  --text-light: #EDEDED;
+  --feature-bg: #e5e3f3;
 }
 
 @theme inline {
@@ -14,8 +21,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0C1821;       /* dark mode background: dark blue */
+    --foreground: #EDEDED;       /* dark mode text: light */
   }
 }
 
