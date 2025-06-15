@@ -1,10 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0C1821;
-  /* light mode background: soft grey */
-  --foreground: #CCC9DC;
-  /* light mode text: dark blue */
+  --background: #CCC9DC;         /* light mode background: soft grey */
+  --foreground: #0C1821;         /* light mode text: dark blue */
 
   /* Branding colors */
   --brand-dark: #0C1821;
