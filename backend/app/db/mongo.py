@@ -2,7 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.core.config import settings
 
-client: AsyncIOMotorClient | None = None
+_client: AsyncIOMotorClient | None = None
 
 async def connect() -> None:
     global _client
@@ -13,7 +13,10 @@ async def connect() -> None:
     )
 
 async def close() -> None:
-    client.close()
+    if _client:
+        _client.close()
 
-def get_mongo_client() -> AsyncIOMotorClient | None:
+def get_mongo_client() -> AsyncIOMotorClient:
+    if _client is None:
+        raise RuntimeError("Mongo client not initialized. Call connect() first.")
     return _client
