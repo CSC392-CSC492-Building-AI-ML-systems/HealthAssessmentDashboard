@@ -1,14 +1,11 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+from app.models.base import Base
 
 engine = create_async_engine(settings.sqlite_path, echo=False)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
-
-class Base(DeclarativeBase):
-    pass
 
 async def init_db() -> None:
     async with engine.begin() as conn:

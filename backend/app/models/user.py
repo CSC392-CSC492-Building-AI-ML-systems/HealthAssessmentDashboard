@@ -13,10 +13,9 @@ class User(Base, PKMixin, TimestampMixin):
     organization_id: Mapped[int | None] = mapped_column(
         ForeignKey("organizations.id"), index=True
     )
-    organization = relationship("Organization", back_populates="users")
 
     preferences = relationship(
         "UserPreferences", uselist=False, back_populates="user", cascade="all, delete"
     )
 
-    chats = relationship("ChatHistory", back_populates="user", cascade="all, delete")
+    # chats = relationship("ChatHistory", back_populates="user", cascade="all, delete")

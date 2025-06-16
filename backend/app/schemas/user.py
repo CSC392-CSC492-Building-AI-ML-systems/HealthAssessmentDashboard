@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, ConfigDict
-from .organization import OrganizationShort
+from app.schemas.organization import OrganizationCreate
 
 """
 Base: Base model
@@ -22,6 +22,6 @@ class UserRead(UserBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    organization: Optional[OrganizationShort] = None
+    organization: Optional[OrganizationCreate] = None
 
     model_config = ConfigDict(from_attributes=True)
