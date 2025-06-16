@@ -2,7 +2,7 @@ import os
 import requests
 from PyPDF2 import PdfReader
 from config import PDF_DIR
-
+import pdfplumber
 
 def download_pdfs(links, project_number):
     os.makedirs(PDF_DIR, exist_ok=True)
@@ -20,14 +20,23 @@ def download_pdfs(links, project_number):
             print(f"Failed to download {link}: {e}")
     return filepaths
 
-
 def text_from_pdfs(filepaths):
-    all_text = ""
+    all_blocks = []
     for path in filepaths:
-        try:
-            reader = PdfReader(path)
-            for page in reader.pages:
-                all_text += page.extract_text() or ""
-        except Exception as e:
-            print(f"Error reading {path}: {e}")
-    return all_text.strip()
+        blocks = extract_text_with_structure(path)
+        all_blocks.extend(blocks)
+    print(f"Extracted {len(all_blocks)} text blocks from {len(filepaths)} PDFs.", flush=True)
+    return all_blocks
+
+def extract_text_with_structure(filepath):
+    text_blocks = []
+    try:
+        with pdfplumber.open(filepath) as pdf:
+            for page in pdf.pages:
+                lines = page.extract_text(layout=True).split('\n')
+                for line in lines:
+                    text_blocks.append(line.strip())
+    except Exception as e:
+        print(f"Error reading {filepath} with pdfplumber: {e}")
+    print(f"Extracted {len(text_blocks)} text blocks from {filepath}.", flush=True)
+    return text_blocks
