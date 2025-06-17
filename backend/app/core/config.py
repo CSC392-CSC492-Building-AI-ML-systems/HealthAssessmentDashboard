@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     mongo_uri: str
     mongo_db: str
     sqlite_path: str
+    jwt_secret_key: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

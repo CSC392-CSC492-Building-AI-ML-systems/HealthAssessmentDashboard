@@ -1,10 +1,19 @@
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-from app.db.sqlite import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
+from app.models.base import Base, TimestampMixin, PKMixin
 
-class User(Base):
+class User(Base, PKMixin, TimestampMixin):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str] = mapped_column(String, unique=True)
+    email: Mapped[str] = mapped_column(unique=True, index=True)
+    first_name: Mapped[str]
+    last_name: Mapped[str]
+    password_hash: Mapped[str]
+
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organizations.id"), index=True
+    )
+
+    preferences = relationship(
+        "UserPreferences", uselist=False, back_populates="user", cascade="all, delete"
+    )
