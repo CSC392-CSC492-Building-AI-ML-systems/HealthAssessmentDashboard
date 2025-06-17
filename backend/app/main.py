@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.db.mongo import connect as mongo_connect, close as mongo_close
 from app.db.sqlite import init_db as sqlite_init
-from app.routers import users, auth
+from app.routers import users, auth, chatbot_router
 import app.models
 
 @asynccontextmanager
@@ -14,4 +14,5 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OurPATHS API", lifespan=lifespan)
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(chatbot_router.router, prefix="/chatbot", tags=["chatbot"])
 app.include_router(auth.router)

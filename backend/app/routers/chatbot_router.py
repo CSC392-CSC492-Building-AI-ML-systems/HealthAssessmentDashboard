@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from typing import List, Optional
 from datetime import datetime
 import os, uuid, shutil
-from app.core.config import settings
+from app.services.chatbot_service import (
+    get_chat_collection,
+)
 from app.db.mongo import get_mongo_client
 from app.models.chatbot import (
     StartChatRequest,
@@ -17,12 +19,6 @@ from app.models.chatbot import (
 router = APIRouter()
 UPLOAD_DIR = "./uploaded_files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-def get_chat_collection():
-    client = get_mongo_client()
-    if client is None:
-        raise HTTPException(status_code=500, detail="MongoDB not connected")
-    return client[settings.mongo_db]["chat_sessions"]
 
 @router.post("/chat/start")
 async def create_chat(request: StartChatRequest):
@@ -101,7 +97,11 @@ async def get_chatbot_reply(session_id: str, user_id: int):
     return {"response": bot_msg}
 
 @router.post("/chat/{session_id}/upload-context", response_model=UploadContextResponse)
-async def upload_context_data(session_id: str, user_id: int, file: UploadFile = File(...)):
+async def upload_context_data(
+    session_id: str, 
+    user_id: int, 
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_mongo_client)):
     filepath = f"{UPLOAD_DIR}/context_{user_id}_{uuid.uuid4()}_{file.filename}"
     with open(filepath, "wb") as f:
         shutil.copyfileobj(file.file, f)
