@@ -5,13 +5,13 @@ import React from "react";
 const Footer: React.FC = () => {
   return (
     <footer className="bg-[var(--background)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">
-      {/* Copyright on Left */}
+      {/* Copyright on left */}
       <div className="flex space-x-3 px-5 ext-sm">
         © Copyright OurPATHS 2025
       </div>
-
-      {/* Home, About & Conact on Right */}
-      <div className="flex space-x-10 px-10 text-sm">
+        {/* Logo to be Added*/}
+      {/* Home, About & Conact on right */}
+      <div className="flex space-x-10 px-10 py-10 text-sm">
         <a href="#" className="hover:text-gray-400">Home</a>
         <a href="#" className="hover:text-gray-400">About</a>
         <a href="#" className="hover:text-gray-400">Contact</a>

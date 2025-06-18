@@ -7,7 +7,7 @@ import Login from "./Login";
 
 const Header: React.FC = () => {
     return (
-        <nav className="bg-background px-4 sm:px-6 md:px-8 lg:px-16 py-4 flex items-center justify-between sticky top-0 z-50">
+        <nav className="bg-[var(--background)] px-4 sm:px-6 md:px-8 lg:px-16 py-4 flex items-center justify-between sticky top-0 z-50">
             {/* Logo */}
             <div className="flex items-center space-x-2">
                 <img src="/logo.png" alt="logo" className="w-6 h-6" />
