@@ -4,14 +4,14 @@ from openai import OpenAI
 from config import MODEL, FIELD_QUERIES, FINAL_PROMPT
 from dotenv import load_dotenv
 from embeddings_utils import chunk_text, embed_chunks, retrieve_top_k
-from Data.vector_store import save_embeddings, load_embeddings
+from Data.azure_blob_store import save_embeddings, load_embeddings 
 
 load_dotenv()
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
 )
 
-def gpt_analyzer(long_text, project_id, generic_name, therapeutic_area):
+def gpt_analyzer(long_text, generic_name, therapeutic_area):
     """Analyzes long text using GPT-4o, chunking it into semantic sections and embedding them for retrieval"""
     print("Chunking and embedding text")
     chunks = chunk_text(long_text)

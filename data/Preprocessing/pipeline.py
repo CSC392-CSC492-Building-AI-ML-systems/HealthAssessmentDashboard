@@ -1,17 +1,22 @@
 import os
-import ast
 import csv
 import json
 import argparse
-from config import INPUT_CSV, OUTPUT_DIR, PDF_DIR
-from utils import text_from_pdfs, download_pdfs, get_price_from_formulary
 from processor import gpt_analyzer
 from datetime import datetime
-
+from config import (
+    INPUT_CSV, 
+    OUTPUT_DIR, 
+    PDF_DIR,
+)
+from Data.azure_blob_store import flush_embeddings_to_azure, upload_jsonl_to_blob, load_embeddings
+from utils import text_from_pdfs, download_pdfs, get_price_from_formulary
 
 def run_pipeline(start_index: int = 0, end_index: int = None):
     """Run the drug summarization pipeline in batches"""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    load_embeddings()
+    summaries = []
 
     with open(INPUT_CSV, newline="", encoding="utf-8-sig") as csvfile:
         print(f"Reading input CSV: {INPUT_CSV}", flush=True)
@@ -63,7 +68,11 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                     print(f"No text extracted for {project_id}, skipping", flush=True)
                     continue
 
-                summary_json = gpt_analyzer(combined_text, project_id, generic_name, therapeutic_area)
+                summary_json = gpt_analyzer(
+                    combined_text, 
+                    generic_name, 
+                    therapeutic_area)
+                
                 if not summary_json:
                     print(f"No summary returned for {project_id}, skipping", flush=True)
                     continue
@@ -106,14 +115,14 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                 else:
                     final_summary["Price Source"] = "CDA"
 
-                # Save result
-                with open(output_path, "w", encoding="utf-8") as f:
-                    json.dump(final_summary, f, indent=2, ensure_ascii=False)
-                print(f"Saved summary to {output_path}", flush=True)
+                summaries.append(final_summary)
 
             except Exception as e:
                 print(f"[{idx}] Failed on {row.get('Project Number', 'N/A')}: {e}", flush=True)
-
+        
+        print("\nFlushing embeddings and jsons to Azure", flush=True)
+        flush_embeddings_to_azure()
+        upload_jsonl_to_blob(summaries)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run drug summarization pipeline in batches")

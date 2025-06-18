@@ -5,7 +5,7 @@ import tiktoken
 import numpy as np
 from openai import OpenAI
 from dotenv import load_dotenv
-from config import EMBEDDING_MODEL, EMBEDDING_DIR
+from config import EMBEDDING_MODEL
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -81,13 +81,3 @@ def retrieve_top_k(index, metadata, query_text, k=5) -> list[str]:
     istances, indices = index.search(query_vec, k)
     top_texts = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
     return top_texts
-
-def save_embeddings(project_id: str, chunk_embeddings: list[dict]):
-    path = os.path.join(EMBEDDING_DIR, f"{project_id}.json")
-    with open(path, "w") as f:
-        json.dump(chunk_embeddings, f, indent=2)
-
-def load_embeddings(project_id: str) -> list[dict]:
-    path = os.path.join(EMBEDDING_DIR, f"{project_id}.json")
-    with open(path) as f:
-        return json.load(f)
