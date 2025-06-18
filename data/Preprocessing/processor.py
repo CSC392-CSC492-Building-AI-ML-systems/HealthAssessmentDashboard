@@ -11,7 +11,7 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
 )
 
-def gpt_analyzer(long_text, project_id, generic_name):
+def gpt_analyzer(long_text, project_id, generic_name, therapeutic_area):
     print("Chunking and embedding text")
     try:
         index, metadata = load_embeddings(project_id)
@@ -19,7 +19,7 @@ def gpt_analyzer(long_text, project_id, generic_name):
     except FileNotFoundError:
         chunks = chunk_text(long_text)
         chunk_embeddings = embed_chunks(chunks)
-        save_embeddings(project_id, chunk_embeddings)
+        save_embeddings(project_id, chunk_embeddings, drug_name=generic_name, therapeutic_area=therapeutic_area)
         index, metadata = load_embeddings(project_id)
         print(f"Loaded {len(metadata)} chunks from vector store for project {project_id}.")
     
@@ -28,7 +28,7 @@ def gpt_analyzer(long_text, project_id, generic_name):
     full_chunk_map = {}
     for field, query in formatted_field_queries.items():
         print(f"\n🔍 Retrieving top chunks for field: {field}")
-        top_chunks = retrieve_top_k(index, metadata, query, k=3)
+        top_chunks = retrieve_top_k(index, metadata, query, k=5)
         print(f"Retrieved {len(top_chunks)} chunks for '{field}'")
 
         combined_text = ""

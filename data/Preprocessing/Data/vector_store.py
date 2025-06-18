@@ -18,7 +18,7 @@ def get_index_path(project_id: str):
 def get_metadata_path(project_id: str):
     return os.path.join(get_project_dir(project_id), "meta.pkl")
 
-def save_embeddings(project_id: str, chunk_embeddings: list[dict]):
+def save_embeddings(project_id: str, chunk_embeddings: list[dict], drug_name: str, therapeutic_area: str):
     print(f"Saving embeddings for project: {project_id}")
     
     dim = len(chunk_embeddings[0]['embedding'])
@@ -27,12 +27,16 @@ def save_embeddings(project_id: str, chunk_embeddings: list[dict]):
     vectors = []
     metadata = []
 
-    for entry in chunk_embeddings:
+    for i, entry in enumerate(chunk_embeddings):
         vector = np.array(entry["embedding"]).astype("float32")
         vectors.append(vector)
         metadata.append({
             "id": str(uuid.uuid4()),
-            "text": entry["text"]
+            "text": entry["text"],
+            "section_title": entry["text"]["section_title"],
+            "drug_name": drug_name,
+            "therapeutic_area": therapeutic_area,
+            "chunk_index": i
         })
 
     vectors_np = np.vstack(vectors)
