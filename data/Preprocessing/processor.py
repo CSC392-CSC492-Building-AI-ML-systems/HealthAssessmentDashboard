@@ -14,15 +14,11 @@ client = OpenAI(
 def gpt_analyzer(long_text, project_id, generic_name, therapeutic_area):
     """Analyzes long text using GPT-4o, chunking it into semantic sections and embedding them for retrieval"""
     print("Chunking and embedding text")
-    try:
-        index, metadata = load_embeddings(project_id)
-        print(f"Loaded {len(metadata)} chunks from vector DB for project {project_id}.")
-    except FileNotFoundError:
-        chunks = chunk_text(long_text)
-        chunk_embeddings = embed_chunks(chunks)
-        save_embeddings(project_id, chunk_embeddings, drug_name=generic_name, therapeutic_area=therapeutic_area)
-        index, metadata = load_embeddings(project_id)
-        print(f"Loaded {len(metadata)} chunks from vector store for project {project_id}.")
+    chunks = chunk_text(long_text)
+    chunk_embeddings = embed_chunks(chunks)
+    save_embeddings(chunk_embeddings, drug_name=generic_name, therapeutic_area=therapeutic_area)
+    index, metadata = load_embeddings()
+
     
     # top 5 chunks
     formatted_field_queries = {field: query.format(drug_name=generic_name) for field, query in FIELD_QUERIES.items()}

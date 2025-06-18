@@ -3,7 +3,8 @@ import pickle
 import uuid
 import faiss
 import numpy as np
-from config import VECTOR_DIR
+from typing import List
+from config import VECTOR_DIR, UNIFIED_INDEX_PATH, UNIFIED_METADATA_PATH
 
 os.makedirs(VECTOR_DIR, exist_ok=True)
 
@@ -18,16 +19,21 @@ def get_index_path(project_id: str):
 def get_metadata_path(project_id: str):
     return os.path.join(get_project_dir(project_id), "meta.pkl")
 
-def save_embeddings(project_id: str, chunk_embeddings: list[dict], drug_name: str, therapeutic_area: str):
-    """Saves embeddings and metadata for a project"""
-    print(f"Saving embeddings for project: {project_id}")
-    
+def save_embeddings(chunk_embeddings: List[dict], drug_name: str, therapeutic_area: str):
+    """Saves unified embeddings across all drugs"""
+    print(f"Saving unified embeddings")
+
     dim = len(chunk_embeddings[0]['embedding'])
-    index = faiss.IndexFlatL2(dim)
+    
+    if os.path.exists(UNIFIED_INDEX_PATH):
+        index = faiss.read_index(UNIFIED_INDEX_PATH)
+        with open(UNIFIED_METADATA_PATH, "rb") as f:
+            metadata = pickle.load(f)
+    else:
+        index = faiss.IndexFlatL2(dim)
+        metadata = []
 
     vectors = []
-    metadata = []
-
     for i, entry in enumerate(chunk_embeddings):
         vector = np.array(entry["embedding"]).astype("float32")
         vectors.append(vector)
@@ -43,25 +49,20 @@ def save_embeddings(project_id: str, chunk_embeddings: list[dict], drug_name: st
     vectors_np = np.vstack(vectors)
     index.add(vectors_np)
 
-    faiss.write_index(index, get_index_path(project_id))
-    
-    with open(get_metadata_path(project_id), "wb") as f:
+    faiss.write_index(index, UNIFIED_INDEX_PATH)
+    with open(UNIFIED_METADATA_PATH, "wb") as f:
         pickle.dump(metadata, f)
+
+    print(f"Unified index now has {index.ntotal} vectors.")
+
+def load_embeddings():
+    """Loads unified embeddings and metadata"""
+    print(f"Loading embeddings for project")
+
+    if not os.path.exists(UNIFIED_INDEX_PATH) or not os.path.exists(UNIFIED_METADATA_PATH):
+        raise FileNotFoundError("Unified index or metadata not found.")
     
-    print(f"Saved {len(vectors)} vectors.")
-
-def load_embeddings(project_id: str):
-    """Loads embeddings and metadata for a project"""
-    print(f"Loading embeddings for project: {project_id}")
-    index_path = get_index_path(project_id)
-    meta_path = get_metadata_path(project_id)
-
-    if not os.path.exists(index_path) or not os.path.exists(meta_path):
-        raise FileNotFoundError("Embedding index or metadata not found.")
-
-    index = faiss.read_index(index_path)
-    
-    with open(meta_path, "rb") as f:
+    index = faiss.read_index(UNIFIED_INDEX_PATH)
+    with open(UNIFIED_METADATA_PATH, "rb") as f:
         metadata = pickle.load(f)
-
     return index, metadata
