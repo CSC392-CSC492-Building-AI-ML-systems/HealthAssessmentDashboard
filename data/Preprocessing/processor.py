@@ -12,6 +12,7 @@ client = OpenAI(
 )
 
 def gpt_analyzer(long_text, project_id, generic_name, therapeutic_area):
+    """Analyzes long text using GPT-4o, chunking it into semantic sections and embedding them for retrieval"""
     print("Chunking and embedding text")
     try:
         index, metadata = load_embeddings(project_id)
@@ -23,7 +24,7 @@ def gpt_analyzer(long_text, project_id, generic_name, therapeutic_area):
         index, metadata = load_embeddings(project_id)
         print(f"Loaded {len(metadata)} chunks from vector store for project {project_id}.")
     
-    # top 3 chunks
+    # top 5 chunks
     formatted_field_queries = {field: query.format(drug_name=generic_name) for field, query in FIELD_QUERIES.items()}
     full_chunk_map = {}
     for field, query in formatted_field_queries.items():

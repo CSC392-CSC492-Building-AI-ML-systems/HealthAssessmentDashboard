@@ -4,12 +4,13 @@ import csv
 import json
 import argparse
 from config import INPUT_CSV, OUTPUT_DIR, PDF_DIR
-from utils import text_from_pdfs, download_pdfs
+from utils import text_from_pdfs, download_pdfs, get_price_from_formulary
 from processor import gpt_analyzer
 from datetime import datetime
 
 
 def run_pipeline(start_index: int = 0, end_index: int = None):
+    """Run the drug summarization pipeline in batches"""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     with open(INPUT_CSV, newline="", encoding="utf-8-sig") as csvfile:
@@ -45,7 +46,7 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                     os.path.join(PDF_DIR, f"{project_id}_{i}.pdf") for i in range(len(links))
                 ]
 
-                # Download PDFs if not already there
+                # Download PDFs
                 if all(os.path.exists(f) for f in expected_files):
                     print(f"PDFs already exist for {project_id}, skipping download", flush=True)
                     pdf_files = expected_files
@@ -70,7 +71,7 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                 summary = json.loads(summary_json)
                 print(f"Summary keys for {project_id}: {list(summary.keys())}", flush=True)
 
-                # Format and enrich metadata
+                # Format metadata
                 try:
                     submission_date = datetime.strptime(row.get("Submission Date", "N/A").strip(), "%b %d, %Y").date().isoformat()
                 except:
@@ -90,6 +91,20 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                     "Recommendation Date": recommendation_date,
                 }
                 final_summary.update(summary)
+
+                # Get price recommendation
+                price_info = final_summary.get("Price Recommendation", {})
+                if price_info.get("min") is None or price_info.get("max") is None:
+                    print(f"Missing price for {project_id}, querying formulary", flush=True)
+                    fetched_price = get_price_from_formulary(generic_name)
+                    if fetched_price is not None:
+                        price_info["min"] = fetched_price
+                        price_info["max"] = fetched_price
+                        final_summary["Price Recommendation"] = price_info
+                        final_summary["Price Source"] = "Ontario Drug Benefit Formulary/Comparative Drug Index"
+                        print(f"Found price: ${fetched_price}", flush=True)
+                else:
+                    final_summary["Price Source"] = "CDA"
 
                 # Save result
                 with open(output_path, "w", encoding="utf-8") as f:

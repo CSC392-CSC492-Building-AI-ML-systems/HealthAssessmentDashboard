@@ -15,6 +15,7 @@ def count_tokens(text):
     return len(enc.encode(text))
 
 def chunk_text(blocks, max_tokens=800, overlap=100):
+    """ Splits text blocks into semantic chunks with headers"""
     chunks = []
     current_chunk = []
     current_header = "Untitled Section"
@@ -42,6 +43,7 @@ def chunk_text(blocks, max_tokens=800, overlap=100):
     return chunks
 
 def embed_text(text: str) -> np.ndarray:
+    """Embeds a single text string using OpenAI's embedding model"""
     if not isinstance(text, str):
         raise ValueError("Text must be a string.")
     
@@ -60,6 +62,7 @@ def embed_text(text: str) -> np.ndarray:
     return np.array(response.data[0].embedding)
 
 def embed_chunks(chunks: list[str]) -> list[dict]:    
+    """Embeds a list of text chunks and returns them with their embeddings"""
     embedded = []
     for i, chunk in enumerate(chunks):
         try:
@@ -73,6 +76,7 @@ def embed_chunks(chunks: list[str]) -> list[dict]:
     return embedded
 
 def retrieve_top_k(index, metadata, query_text, k=5) -> list[str]:
+    """Retrieves the top k most similar texts from the index based on the query"""
     query_vec = embed_text(query_text).astype("float32").reshape(1, -1)
     istances, indices = index.search(query_vec, k)
     top_texts = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]

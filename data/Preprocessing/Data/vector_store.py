@@ -19,6 +19,7 @@ def get_metadata_path(project_id: str):
     return os.path.join(get_project_dir(project_id), "meta.pkl")
 
 def save_embeddings(project_id: str, chunk_embeddings: list[dict], drug_name: str, therapeutic_area: str):
+    """Saves embeddings and metadata for a project"""
     print(f"Saving embeddings for project: {project_id}")
     
     dim = len(chunk_embeddings[0]['embedding'])
@@ -50,6 +51,7 @@ def save_embeddings(project_id: str, chunk_embeddings: list[dict], drug_name: st
     print(f"Saved {len(vectors)} vectors.")
 
 def load_embeddings(project_id: str):
+    """Loads embeddings and metadata for a project"""
     print(f"Loading embeddings for project: {project_id}")
     index_path = get_index_path(project_id)
     meta_path = get_metadata_path(project_id)
