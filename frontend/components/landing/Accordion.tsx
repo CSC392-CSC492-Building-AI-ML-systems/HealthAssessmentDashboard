@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { ArrowUp, ArrowDown } from 'lucide-react';
 type AccordionProps = {
   question: string,
   answer: string,
@@ -18,8 +19,8 @@ const Accordion = (props: AccordionProps) => {
             <span className = "text-lg">
               {props.question} 
             </span>
-            <span className = "opacity-50" style={{ color: 'var(--brand-dark)' }}>
-              {showQA ? "↑" : "↓"}
+            <span style={{ color: 'var(--brand-light)' }}>
+              {showQA ? <ArrowUp /> : <ArrowDown />}
             </span>
           </button>
           {showQA && <p className = "text-md">
