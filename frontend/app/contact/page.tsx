@@ -10,8 +10,8 @@ const Contact: React.FC = () => {
         <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans px-6 py-4">
             {/* Brand label*/}
             <div className = "relative overflow-hidden">
-            <img src="/globe.svg" alt="Logo" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
-            <img src="/DarkAcronym.svg" alt="Logo" className="w-160 h-auto z-50" />
+            <img src="/globe.svg" alt="Globe" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
+            <img src="/ourpathsexp-light.png" alt="OurPATHS Logo" className="w-160 h-auto z-50" />
             </div>
 
             {/* Emails and other contact information.
