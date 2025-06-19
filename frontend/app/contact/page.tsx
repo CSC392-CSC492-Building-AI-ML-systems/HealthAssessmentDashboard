@@ -15,7 +15,7 @@ const Contact: React.FC = () => {
             : "/ourpathsexp-dark.png";
     return (
         
-        <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans px-6 py-4">
+        <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans py-4">
             {/* Brand label*/}
             <div className = "relative overflow-hidden">
             <img src="/globe.svg" alt="Globe" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
