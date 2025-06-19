@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0C1821;
+  /* light mode background: soft grey */
+  --foreground: #CCC9DC;
+  /* light mode text: dark blue */
+
+  /* Branding colors */
+  --brand-dark: #0C1821;
+  --brand-light: #CCC9DC;
+  --button-red: #7E111A;
+  --text-light: #EDEDED;
+  --feature-bg: #e5e3f3;
 }
 
 @theme inline {
@@ -12,11 +21,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
   }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
 }
 
 body {
@@ -24,3 +39,4 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
