@@ -2,11 +2,19 @@
 
 import Image from "next/image";
 import React from "react";
+import { useTheme } from "next-themes";
 import CreateAccountButton from "./CreateAccount";
 
 const Hero: React.FC = () => {
+  const { theme } = useTheme();
+  
+      const logo =
+      theme === "dark"
+        ? "/ourpathsexp-light.png"
+        : "/ourpathsexp-dark.png";
+
   return (
-    <section className="w-full bg-[#0C1821] text-white py-16 px-4 relative overflow-hidden">
+    <section className="w-full bg-var(--background) text-var(--text-light) py-16 px-4 relative overflow-hidden">
       {/* Background Globe */}
       <img
         src="/globe.svg"
@@ -18,7 +26,7 @@ const Hero: React.FC = () => {
         {/* Left: Logo only */}
         <div className="flex items-center">
           <Image
-            src="/ourpathsexp-light.png" 
+            src={logo} 
             alt="OurPATHS Logo"
             width={600}
             height={40}

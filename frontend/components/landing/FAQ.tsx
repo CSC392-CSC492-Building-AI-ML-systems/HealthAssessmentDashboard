@@ -8,7 +8,7 @@ import Accordion from "./Accordion"
 /* TODO: possibly alter a few questions to be more detailed in terms of pharamceutical companies' concerns */
 const dataFAQ = [
         {question: "What insurance companies or health sites are used in the training of the chatbot?",
-            answer: "We have utilized information from multiple sites, including pCPA, CDA, and INESSS.",},
+            answer: "We have utilized information from multiple sites, including pCPA, CDA, Sanofi and INESSS.",},
 
         {question: "Are the OurPATHS AI-assisstant and Dashboard free to use?",
             answer: "Our chatbot and dashboard are completely free for usage! You can get started by creating an account here.",},
@@ -20,8 +20,8 @@ const dataFAQ = [
 const FAQ: React.FC = () => {
     return (
         <div>
-          <h1 className = "pt-24 pb-8 text-center text-5xl lg:text-6xl font-semibold tracking-wide"
-          style={{ color: 'var(--brand-light)' }}>
+          <h1 className = "pt-4 pb-4 text-center text-5xl lg:text-6xl font-semibold tracking-wide"
+          style={{ color: 'var(--text-light)' }}>
             FAQ
             </h1>
 
