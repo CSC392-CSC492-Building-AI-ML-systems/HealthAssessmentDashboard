@@ -34,8 +34,7 @@ const Landing: React.FC = () => {
             ))}
         </Marquee>
         </div>
-        {/* FAQ seems to not have icons... delaying incorporation for now. */}
-        {/* <FAQ/> */}
+        <FAQ/>
         <FeatureOverview/>
         </div>
     );
