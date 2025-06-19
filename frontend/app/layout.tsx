@@ -32,7 +32,7 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: "OurPATHS",
-  description: "Insurance Data Collector AI Assistant",
+  description: "The Observational, Usable & Real-time Predictive Analytics Toolkit for Healthcare Strategy (OurPATHS)",
 };
 
 export default function RootLayout({
