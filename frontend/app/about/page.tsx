@@ -14,29 +14,29 @@ const About: React.FC = () => {
         : "/ourpathsexp-dark.png";
     return (
         
-        <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans px-6 py-4">
-            {/* Brand label*/}
-            <div className = "relative overflow-hidden">
-            <img src="/globe.svg" alt="Globe" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
-            <img src={logo} alt="OurPATHS Logo" className="w-160 h-auto z-50" />
-            </div>
+      <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans">
+        {/* Brand label*/}
+        <div className = "relative overflow-hidden">
+          <img src="/globe.svg" alt="Globe" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
+          <img src={logo} alt="OurPATHS Logo" className="w-160 h-auto z-50" />
+        </div>
 
-      {/* Overview paragraph */}
-      <div className="text-center justify-between text-lg bg-[var(--foreground)] text-[var(--background)] py-16 px-4 sm:px-8 lg:px-32">
-        <p>
-          OurPATHS is a decision-support platform designed to assist pharmaceutical stakeholders
-          in navigating Canada’s complex market access landscape.
-        </p>
-        <p className="mt-4">
-          By integrating structured data from agencies such as pCPA, CDA, and INESSS, OurPATHS offers
-          both analytical dashboards and a generative AI assistant. Together, these tools enable users
-          to explore historical precedents, forecast pricing and approval timelines, and query data in
-          natural language—all in one unified interface.
-        </p>
-      </div>
+        {/* Overview paragraph */}
+        <div className="text-center justify-between text-lg bg-[var(--foreground)] text-[var(--background)] py-16 px-4 sm:px-8 lg:px-12">
+          <p>
+            OurPATHS is a decision-support platform designed to assist pharmaceutical stakeholders
+            in navigating Canada’s complex market access landscape.
+          </p>
+          <p className="mt-4">
+            By integrating structured data from agencies such as pCPA, CDA, and INESSS, OurPATHS offers
+            both analytical dashboards and a generative AI assistant. Together, these tools enable users
+            to explore historical precedents, forecast pricing and approval timelines, and query data in
+            natural language: all in one unified interface.
+          </p>
+        </div>
 
       {/* Eight foundational principles */}
-      <div className="max-w-4xl mx-auto py-10 px-4 sm:px-8 lg:px-32">
+      <div className="max-w-5xl mx-auto py-10 px-4 sm:px-8 lg:px-12">
         <h2 className="text-2xl font-semibold text-center mb-6">
           At its core, OurPATHS is built around eight foundational principles.
         </h2>
