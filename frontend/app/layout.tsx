@@ -55,7 +55,7 @@ export default async function RootLayout({
             <Header />
 
             {/* Middle content */}
-            <main className="flex-1 p-2">
+            <main className="flex-1">
               {children}
             </main>
 

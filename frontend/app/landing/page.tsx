@@ -16,10 +16,9 @@ const Landing: React.FC = () => {
         <div className="py-4" style={{ backgroundColor: "#0C1821" }}>
         <Marquee reverse pauseOnHover repeat={4}>
             {[
-            { src: "/partners/cda.png", alt: "CDA" },
-            { src: "/partners/inesss.png", alt: "INESS" },
-            { src: "/partners/pcpa.svg", alt: "pCPA"},
-            { src: "/partners/sanofi.png", alt: "Sanofi" },
+            { src: "/sources/cda.png", alt: "CDA" },
+            { src: "/sources/inesss.png", alt: "INESS" },
+            { src: "/sources/pcpa.svg", alt: "pCPA"},
             ].map((logo, index) => (
             <div
                 key={index}
@@ -34,7 +33,6 @@ const Landing: React.FC = () => {
             ))}
         </Marquee>
         </div>
-        {/* FAQ seems to not have icons... delaying incorporation for now. */}
         <FeatureOverview/>
         <FAQ/>
         </div>
