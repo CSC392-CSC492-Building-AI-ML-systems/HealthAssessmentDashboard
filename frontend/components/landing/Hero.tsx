@@ -3,11 +3,16 @@
 import Image from "next/image";
 import React from "react";
 import CreateAccountButton from "./CreateAccount";
-// import { LogoCarousel } from "./LogoCarousel";
 
 const Hero: React.FC = () => {
   return (
-    <section className="w-full bg-[#0c1a24] text-white py-16 px-4">
+    <section className="w-full bg-[#0C1821] text-white py-16 px-4 relative overflow-hidden">
+      {/* Background Globe */}
+      <img
+        src="/globe.svg"
+        alt="Globe Background"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0 pointer-events-none"
+      />
       <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
         
         {/* Left: Logo only */}

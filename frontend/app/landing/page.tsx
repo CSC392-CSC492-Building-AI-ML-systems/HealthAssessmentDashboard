@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Hero from "@/components/landing/Hero";
 import { Marquee } from "@/components/general/magicui/Marquee";
 
 const Landing: React.FC = () => {
     return (
+        <div>
+        <Hero/>
         <div className="py-4" style={{ backgroundColor: "#0C1821" }}>
         <Marquee reverse pauseOnHover repeat={4}>
             {[
@@ -27,7 +30,7 @@ const Landing: React.FC = () => {
             ))}
         </Marquee>
         </div>
-
+        </div>
     );
 }
 
