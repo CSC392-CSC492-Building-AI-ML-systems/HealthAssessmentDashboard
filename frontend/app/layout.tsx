@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Footer from "@/components/general/Footer";
 import Header from "@/components/general/Header";
-import FAQ from "@/components/landing/FAQ";
+import { cookies } from "next/headers";
 import { LightDarkProvider } from "@/components/general/theme/LightDarkProvider";
 import { Inter, Outfit } from 'next/font/google';
 import "./globals.css";
@@ -35,14 +35,17 @@ export const metadata: Metadata = {
   description: "The Observational, Usable & Real-time Predictive Analytics Toolkit for Healthcare Strategy (OurPATHS)",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("theme");
+  const theme = themeCookie ? themeCookie.value : "dark";
   return (
     // <html lang="en" >
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={theme} style={{colorScheme:theme}}>
       <body
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
