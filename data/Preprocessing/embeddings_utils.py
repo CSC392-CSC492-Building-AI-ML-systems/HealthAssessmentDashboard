@@ -75,8 +75,10 @@ def embed_chunks(chunks: list[str]) -> list[dict]:
             print(f"Skipping chunk {i} due to error: {e}")
     return embedded
 
+
 def retrieve_top_k(index, metadata, query_text, k=5) -> list[str]:
     """Retrieves the top k most similar texts from the index based on the query"""
+
     query_vec = embed_text(query_text).astype("float32").reshape(1, -1)
     istances, indices = index.search(query_vec, k)
     top_texts = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
