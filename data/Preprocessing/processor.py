@@ -4,31 +4,28 @@ from openai import OpenAI
 from config import MODEL, FIELD_QUERIES, FINAL_PROMPT
 from dotenv import load_dotenv
 from embeddings_utils import chunk_text, embed_chunks, retrieve_top_k
-from Data.vector_store import save_embeddings, load_embeddings
+from Data.azure_blob_store import save_embeddings, load_embeddings 
 
 load_dotenv()
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
 )
 
-def gpt_analyzer(long_text, project_id, generic_name):
+def gpt_analyzer(long_text, generic_name, therapeutic_area):
+    """Analyzes long text using GPT-4o, chunking it into semantic sections and embedding them for retrieval"""
     print("Chunking and embedding text")
-    try:
-        index, metadata = load_embeddings(project_id)
-        print(f"Loaded {len(metadata)} chunks from vector DB for project {project_id}.")
-    except FileNotFoundError:
-        chunks = chunk_text(long_text)
-        chunk_embeddings = embed_chunks(chunks)
-        save_embeddings(project_id, chunk_embeddings)
-        index, metadata = load_embeddings(project_id)
-        print(f"Loaded {len(metadata)} chunks from vector store for project {project_id}.")
+    chunks = chunk_text(long_text)
+    chunk_embeddings = embed_chunks(chunks)
+    save_embeddings(chunk_embeddings, drug_name=generic_name, therapeutic_area=therapeutic_area)
+    index, metadata = load_embeddings()
+
     
-    # top 3 chunks
+    # top 5 chunks
     formatted_field_queries = {field: query.format(drug_name=generic_name) for field, query in FIELD_QUERIES.items()}
     full_chunk_map = {}
     for field, query in formatted_field_queries.items():
         print(f"\n🔍 Retrieving top chunks for field: {field}")
-        top_chunks = retrieve_top_k(index, metadata, query, k=3)
+        top_chunks = retrieve_top_k(index, metadata, query, k=5)
         print(f"Retrieved {len(top_chunks)} chunks for '{field}'")
 
         combined_text = ""

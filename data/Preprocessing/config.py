@@ -8,9 +8,12 @@ INPUT_CSV = os.path.join(
     BASE_DIR, "Data", "scrapedData", "cdaDownloads", "cda_amc_cleaned.csv"
 )
 EMBEDDING_MODEL = "text-embedding-3-small"
-EMBEDDING_DIR = os.path.join(BASE_DIR, "Data", "embeddings")
+EMBEDDING_MODEL_DIM = 1536
 VECTOR_DIR = os.path.join(BASE_DIR, "Data", "vectorDB")
-
+UNIFIED_INDEX_PATH = os.path.join(VECTOR_DIR, "unified.index")
+UNIFIED_METADATA_PATH = os.path.join(VECTOR_DIR, "unified_meta.pkl")
+AZURE_OUTPUT_BLOB_NAME = "summaries_batch.jsonl"
+AZURE_OUTPUT_LOCAL_TEMP = "summaries_batch.jsonl"
 
 # PDF processing config
 MODEL = "gpt-4o"
@@ -37,14 +40,18 @@ Merge and deduplicate them into a single structured output with the following fi
     - "min": float or null  
     - "max": float or null  
     Notes:
-      - From the document, extract any specific price information or cost analysis for the recommended drug, {drug_name}.
+      - Extract specific price information or cost analysis for drug: {drug_name}.
       - Only include prices that are directly associated with {drug_name} — ignore any prices or cost comparisons related to other drugs.
       - Focus on values such as the expected cost per patient, cost per treatment cycle, or overall cost for {drug_name}. 
       - If only one price is listed, use it as both min and max. If a price range is listed, extract the minimum and maximum.
       - Return only numeric values (in dollars) if available.
       - If no price is mentioned, set both min and max to `null`.
-      - DO NOT write strings like "A reduction in price" or "Not specified".
 - "Key Conditions or Restrictions": string (max 50 words, eligibility, clinical conditions)
+- "Treatment Cycle Duration": integer (duration in days)
+    Notes:
+        - Extract the duration of one treatment cycle of {drug_name}, or the overall treatment course length and convert to number of days.
+        - If duration is given in weeks or years, convert it to days (e.g. 1 year = 365 days, 1 week = 7 days).
+        - If no explicit cycle duration is mentioned but annual cost is given (e.g. "$xyz annually"), assume treatment cycle duration is 365 days. If only monthly or weekly pricing is given, assume 30 or 7 days respectively. If no time-based cost or duration info is found, set to `null`.
 
 Here are the extracted fields:
 {text}
@@ -58,6 +65,12 @@ FIELD_QUERIES = {
         "including wholesale or reimbursement prices, cost comparisons to alternatives, and incremental cost values? "
         "Include any specific dollar values, such as $X per 28-day cycle, and statements on whether the drug increases "
         "or decreases cost compared to other treatments."
+        "What is the duration of one treatment cycle of {drug_name} (in days or weeks), or the overall treatment course length."
     ),
-    "Key Conditions or Restrictions": "What are the key conditions or restrictions for using {drug_name}?"
+    "Key Conditions or Restrictions": "What are the key conditions or restrictions for using {drug_name}?",
+    "Treatment Cycle Duration": (
+        "What is the duration of one treatment cycle of {drug_name} (in days, weeks or years), or the overall treatment course length?"
+        "If pricing is provided as annual cost, assume 365 days. If monthly, assume 30 days. If weekly, assume 7 days."
+        "Return the duration as an integer number of days only."
+    )
 }

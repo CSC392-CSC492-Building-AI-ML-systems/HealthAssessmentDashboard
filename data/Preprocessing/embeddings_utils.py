@@ -5,7 +5,7 @@ import tiktoken
 import numpy as np
 from openai import OpenAI
 from dotenv import load_dotenv
-from config import EMBEDDING_MODEL, EMBEDDING_DIR
+from config import EMBEDDING_MODEL
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -15,6 +15,7 @@ def count_tokens(text):
     return len(enc.encode(text))
 
 def chunk_text(blocks, max_tokens=800, overlap=100):
+    """ Splits text blocks into semantic chunks with headers"""
     chunks = []
     current_chunk = []
     current_header = "Untitled Section"
@@ -42,6 +43,7 @@ def chunk_text(blocks, max_tokens=800, overlap=100):
     return chunks
 
 def embed_text(text: str) -> np.ndarray:
+    """Embeds a single text string using OpenAI's embedding model"""
     if not isinstance(text, str):
         raise ValueError("Text must be a string.")
     
@@ -60,6 +62,7 @@ def embed_text(text: str) -> np.ndarray:
     return np.array(response.data[0].embedding)
 
 def embed_chunks(chunks: list[str]) -> list[dict]:    
+    """Embeds a list of text chunks and returns them with their embeddings"""
     embedded = []
     for i, chunk in enumerate(chunks):
         try:
@@ -72,18 +75,11 @@ def embed_chunks(chunks: list[str]) -> list[dict]:
             print(f"Skipping chunk {i} due to error: {e}")
     return embedded
 
-def retrieve_top_k(index, metadata, query_text, k=4) -> list[str]:
+
+def retrieve_top_k(index, metadata, query_text, k=5) -> list[str]:
+    """Retrieves the top k most similar texts from the index based on the query"""
+
     query_vec = embed_text(query_text).astype("float32").reshape(1, -1)
     istances, indices = index.search(query_vec, k)
     top_texts = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
     return top_texts
-
-def save_embeddings(project_id: str, chunk_embeddings: list[dict]):
-    path = os.path.join(EMBEDDING_DIR, f"{project_id}.json")
-    with open(path, "w") as f:
-        json.dump(chunk_embeddings, f, indent=2)
-
-def load_embeddings(project_id: str) -> list[dict]:
-    path = os.path.join(EMBEDDING_DIR, f"{project_id}.json")
-    with open(path) as f:
-        return json.load(f)
