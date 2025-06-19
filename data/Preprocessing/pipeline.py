@@ -62,12 +62,6 @@ def run_pipeline(start_index: int = 0, end_index: int = None):
                 if not pdf_files:
                     print(f"No PDFs downloaded for {project_id}, skipping", flush=True)
                     continue
-                
-                pdf_files = []
-                expected_files = [
-                    os.path.join(PDF_DIR, f"{project_id}_{i}.pdf") for i in range(len(links))
-            ]
-
 
                 combined_text = text_from_pdfs(pdf_files)
                 if not combined_text:
