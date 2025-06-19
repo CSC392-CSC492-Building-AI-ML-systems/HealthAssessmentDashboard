@@ -4,11 +4,15 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Hero from "@/components/landing/Hero";
 import { Marquee } from "@/components/general/magicui/Marquee";
+import FAQ from "@/components/landing/FAQ";
+import Summary from "@/components/landing/Summary";
+import FeatureOverview from "@/components/landing/FeatureOverview";
 
 const Landing: React.FC = () => {
     return (
         <div>
         <Hero/>
+        <Summary/>
         <div className="py-4" style={{ backgroundColor: "#0C1821" }}>
         <Marquee reverse pauseOnHover repeat={4}>
             {[
@@ -30,6 +34,9 @@ const Landing: React.FC = () => {
             ))}
         </Marquee>
         </div>
+        {/* FAQ seems to not have icons... delaying incorporation for now. */}
+        {/* <FAQ/> */}
+        <FeatureOverview/>
         </div>
     );
 }
