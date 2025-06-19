@@ -14,7 +14,7 @@ const CreateAccountButton: React.FC = () => {
   return (
     <button
       onClick={handleClick}
-      className="group flex items-center gap-3 px-6 py-3 rounded-full border-4 border-[#0c1a24] dark:border-[#c7c5dd] bg-transparent text-[#0c1a24] dark:text-[#c7c5dd] text-lg font-semibold transition-all hover:bg-[#0c1a24]/10 dark:hover:bg-white/10"
+      className="group flex items-center gap-3 px-6 py-3 rounded-full border-4 border-var(--foreground) border-var-(--foreground) bg-transparent text-var(--background) text-var(--background) text-lg font-semibold transition-all hover:bg-var(--text-light)/10 hover:bg-white/10"
     >
       Create an account
       <ArrowRight

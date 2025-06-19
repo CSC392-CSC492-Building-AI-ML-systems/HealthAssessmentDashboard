@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from 'next/link';
 
 const Footer: React.FC = () => {
   return (
@@ -12,9 +13,9 @@ const Footer: React.FC = () => {
         {/* Logo to be Added*/}
       {/* Home, About & Conact on right */}
       <div className="flex space-x-10 px-10 py-10 text-sm">
-        <a href="#" className="hover:text-gray-400">Home</a>
-        <a href="#" className="hover:text-gray-400">About</a>
-        <a href="#" className="hover:text-gray-400">Contact</a>
+        <Link href="/" className="hover:text-gray-400">Home</Link>
+        <Link href="/about" className="hover:text-gray-400">About</Link>
+        <Link href="/contact" className="hover:text-gray-400">Contact</Link>
       </div>
     </footer>
   );
