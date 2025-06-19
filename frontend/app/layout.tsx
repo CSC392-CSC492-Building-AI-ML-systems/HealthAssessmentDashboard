@@ -55,7 +55,6 @@ export default function RootLayout({
             <main className="flex-1 p-2">
               {children}
             </main>
-            <FAQ/>
 
             {/* Footer */}
             <Footer />
