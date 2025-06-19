@@ -49,7 +49,7 @@ export default function RootLayout({
           <Header />
 
           {/* Middle content */}
-          <main className="flex-1 p-4">
+          <main className="flex-1 p-2">
             {children}
           </main>
 

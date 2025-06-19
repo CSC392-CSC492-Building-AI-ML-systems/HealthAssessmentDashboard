@@ -18,7 +18,7 @@ const Hero: React.FC = () => {
         {/* Left: Logo only */}
         <div className="flex items-center">
           <Image
-            src="/ourpathsexplogo_dark.png" 
+            src="/ourpathsexp-light.png" 
             alt="OurPATHS Logo"
             width={600}
             height={40}
