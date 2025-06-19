@@ -10,8 +10,8 @@ const Hero: React.FC = () => {
   
       const logo =
       theme === "dark"
-        ? "/ourpathsexp-dark.png"
-        : "/ourpathsexp-light.png";
+        ? "/ourpathsexp-light.png"
+        : "/ourpathsexp-dark.png";
 
   return (
     <section className="w-full bg-var(--background) text-var(--text-light) py-16 px-4 relative overflow-hidden">

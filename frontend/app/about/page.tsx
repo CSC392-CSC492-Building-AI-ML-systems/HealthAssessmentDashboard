@@ -2,18 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const About: React.FC = () => {
+    // alter the logo depending on the mode
+    const { theme } = useTheme();
+  
+      const logo =
+      theme === "dark"
+        ? "/ourpathsexp-light.png"
+        : "/ourpathsexp-dark.png";
     return (
-    <div>    
+        
+        <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans px-6 py-4">
             {/* Brand label*/}
             <div className = "relative overflow-hidden">
             <img src="/globe.svg" alt="Globe" className="mx-auto absolute left-1/2 top-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] opacity-10 z-0" />
-            <img src="/ourpathsexp-light.png" alt="OurPATHS Logo" className="w-160 h-auto z-50" />
+            <img src={logo} alt="OurPATHS Logo" className="w-160 h-auto z-50" />
             </div>
 
       {/* Overview paragraph */}
-      <div className="bg-[var(--brand-light)] text-[var(--brand-dark)] py-10 px-4 sm:px-8 lg:px-32">
+      <div className="text-center justify-between text-lg bg-[var(--foreground)] text-[var(--background)] py-16 px-4 sm:px-8 lg:px-32">
         <p>
           OurPATHS is a decision-support platform designed to assist pharmaceutical stakeholders
           in navigating Canada’s complex market access landscape.
@@ -31,7 +40,7 @@ const About: React.FC = () => {
         <h2 className="text-2xl font-semibold text-center mb-6">
           At its core, OurPATHS is built around eight foundational principles.
         </h2>
-        <ul className="space-y-6 text-sm md:text-base">
+        <ul className="mt-10 text-center space-y-6 text-sm md:text-base">
           <li>
             <strong>Observational:</strong> Captures and structures real-world evidence from pCPA, CDA, and INESSS
             to support data-driven market access analysis.

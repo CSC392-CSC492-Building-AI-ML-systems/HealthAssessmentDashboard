@@ -8,11 +8,11 @@ import { Code, Clock, Globe } from "lucide-react";
 const Contact: React.FC = () => {
     // alter the logo depending on the mode
     const { theme } = useTheme();
-  
-      const logo =
-      theme === "dark"
-        ? "/ourpathsexp-light.png"
-        : "/ourpathsexp-dark.png";
+      
+          const logo =
+          theme === "dark"
+            ? "/ourpathsexp-light.png"
+            : "/ourpathsexp-dark.png";
     return (
         
         <div className="font-[var(--font-body)] bg-[var(--background)] text-[var(--text-light)] font-sans px-6 py-4">
