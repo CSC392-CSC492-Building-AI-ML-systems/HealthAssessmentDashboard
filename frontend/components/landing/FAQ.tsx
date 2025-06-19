@@ -20,8 +20,8 @@ const dataFAQ = [
 const FAQ: React.FC = () => {
     return (
         <div>
-          <h1 className = "pt-24 pb-8 text-center text-5xl lg:text-6xl font-semibold tracking-wide"
-          style={{ color: 'var(--brand-light)' }}>
+          <h1 className = "pt-4 pb-4 text-center text-5xl lg:text-6xl font-semibold tracking-wide"
+          style={{ color: 'var(--text-light)' }}>
             FAQ
             </h1>
 

@@ -1,18 +1,29 @@
 @import "tailwindcss"; 
 
+/* for light mode */
 :root {
-  --background: #0C1821;
-  /* light mode background: soft grey */
-  --foreground: #CCC9DC;
-  /* light mode text: dark blue */
+  --background: #ccc9dc;
+  --foreground: #0c1821;
 
   /* Branding colors */
   --brand-dark: #0C1821;
   --brand-light: #CCC9DC;
   --button-red: #7E111A;
-  --text-light: #EDEDED;
-  --feature-bg: #e5e3f3;
-}
+  --text-light: #0C1821;
+  --feature-bg: #EDEDED;
+
+  /* Branding fonts */
+  --font-body: var(--font-inter);
+  --font-display: var(--font-outfit);
+  }
+
+  /* for dark mode */
+  .dark {
+    --background: #0C1821;
+    --foreground: #CCC9DC;
+    --text-light: #EDEDED;
+  }
+  
 
 @theme inline {
   --color-background: var(--background);
@@ -22,16 +33,16 @@
 }
 
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+0% {
+  transform: translateX(0%);
+}
+100% {
+  transform: translateX(-100%);
+}
 }
 
 .animate-marquee {
-  animation: marquee var(--duration) linear infinite;
+animation: marquee var(--duration) linear infinite;
 }
 
 body {

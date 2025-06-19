@@ -34,8 +34,8 @@ const Landing: React.FC = () => {
             ))}
         </Marquee>
         </div>
-        <FAQ/>
         <FeatureOverview/>
+        <FAQ/>
         </div>
     );
 }

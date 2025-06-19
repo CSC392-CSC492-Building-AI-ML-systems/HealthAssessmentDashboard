@@ -7,6 +7,8 @@ type AccordionProps = {
   question: string,
   answer: string,
 } 
+
+/* Don't show answers until useState is true */
 const Accordion = (props: AccordionProps) => {
   const [showQA, setShowQA] = useState(false);
 
@@ -19,7 +21,8 @@ const Accordion = (props: AccordionProps) => {
             <span className = "text-lg">
               {props.question} 
             </span>
-            <span style={{ color: 'var(--brand-light)' }}>
+            {/* Currently: Dark Mode */}
+            <span style={{ color: 'var(--foreground)' }}>
               {showQA ? <ArrowUp /> : <ArrowDown />}
             </span>
           </button>
