@@ -1,5 +1,3 @@
-import os
-import json
 import re
 import tiktoken
 import numpy as np
@@ -8,78 +6,104 @@ from dotenv import load_dotenv
 from config import EMBEDDING_MODEL
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=__import__("os").getenv("OPENAI_API_KEY"))
 enc = tiktoken.encoding_for_model(EMBEDDING_MODEL)
 
-def count_tokens(text):
+# Model limits
+MAX_EMBED_TOKENS = 8191
+EMBED_OVERLAP    = 100
+
+def count_tokens(text: str) -> int:
     return len(enc.encode(text))
 
-def chunk_text(blocks, max_tokens=800, overlap=100):
-    """ Splits text blocks into semantic chunks with headers"""
+def chunk_text(blocks, max_tokens=650, overlap=50):
+    """
+    Splits a list of {'source','page','text'} dicts into semantic chunks
+    of <= max_tokens tokens, with an overlap of `overlap` tokens.
+    """
     chunks = []
-    current_chunk = []
+    current_tokens = []
+    current_meta   = {}
     current_header = "Untitled Section"
 
-    for block in blocks:
-        if re.match(r"^[A-Z][A-Z\s\d:]{3,}$", block) or re.match(r"^\d+\.\s+[A-Z]", block):
-            if current_chunk:
-                chunk_text = " ".join(current_chunk).strip()
-                if count_tokens(chunk_text) > max_tokens:
-                    words = chunk_text.split()
-                    for i in range(0, len(words), max_tokens - overlap):
-                        subchunk = " ".join(words[i:i + max_tokens])
-                        chunks.append({"text": subchunk, "section_title": current_header})
-                else:
-                    chunks.append({"text": chunk_text, "section_title": current_header})
-            current_header = block.strip()
-            current_chunk = []
-        else:
-            current_chunk.append(block)
+    def flush_chunk():
+        if not current_tokens:
+            return
+        text = enc.decode(current_tokens)
+        chunks.append({
+            **current_meta,
+            "section_title": current_header,
+            "text": text
+        })
 
-    if current_chunk:
-        chunks.append({"text": " ".join(current_chunk).strip(), "section_title": current_header})
-    
-    print(f"Created {len(chunks)} semantic chunks with headers.", flush=True)
+    for block in blocks:
+        header = block["text"]
+        is_header = bool(re.match(r"^[A-Z][A-Z\s\d:]{3,}$", header) or
+                         re.match(r"^\d+\.\s+[A-Z]", header))
+        if is_header:
+            # flush previous chunk
+            flush_chunk()
+            # start new
+            current_header = header
+            current_tokens = []
+            current_meta   = {"source": block["source"], "page": block["page"]}
+            continue
+
+        # tokenize this line
+        line_tokens = enc.encode(block["text"] + " ")
+        if not current_meta:
+            current_meta = {"source": block["source"], "page": block["page"]}
+
+        # if adding would exceed, flush with overlap
+        if len(current_tokens) + len(line_tokens) > max_tokens:
+            # keep last `overlap` tokens as the start of the next chunk
+            overlap_tokens = current_tokens[-overlap:]
+            flush_chunk()
+            current_tokens = overlap_tokens
+
+        current_tokens.extend(line_tokens)
+
+    # final flush
+    flush_chunk()
+    print(f"Created {len(chunks)} chunks (≈{max_tokens} tokens each).", flush=True)
     return chunks
 
 def embed_text(text: str) -> np.ndarray:
-    """Embeds a single text string using OpenAI's embedding model"""
-    if not isinstance(text, str):
-        raise ValueError("Text must be a string.")
-    
+    """Embeds a single text string, ensuring it's under the token limit."""
     if not text.strip():
-        raise ValueError("Text is empty.")
+        raise ValueError("Text must be non-empty.")
+    tok_count = count_tokens(text)
+    if tok_count > MAX_EMBED_TOKENS:
+        raise ValueError(f"Text exceeds token limit ({tok_count} > {MAX_EMBED_TOKENS}).")
 
-    num_tokens = count_tokens(text)
-    if num_tokens > 8191: 
-        raise ValueError(f"Text exceeds token limit: {num_tokens} tokens.")
+    resp = client.embeddings.create(input=[text], model=EMBEDDING_MODEL)
+    return np.array(resp.data[0].embedding, dtype="float32")
 
-    response = client.embeddings.create(
-        input=[text],
-        model=EMBEDDING_MODEL
-    )
-    print(f"Embedding created for text: {text[:30]}...", flush=True)
-    return np.array(response.data[0].embedding)
-
-def embed_chunks(chunks: list[str]) -> list[dict]:    
-    """Embeds a list of text chunks and returns them with their embeddings"""
+def embed_chunks(chunks):
+    """
+    Embeds each chunk safely. Since chunk_text guarantees 
+    token ≤ max_tokens, we don’t need to re-split here.
+    """
     embedded = []
-    for i, chunk in enumerate(chunks):
+    for idx, c in enumerate(chunks):
         try:
-            embedding = embed_text(chunk['text'])
-            embedded.append({
-                "text": chunk,
-                "embedding": embedding,
-            })
+            vec = embed_text(c["text"])
+            embedded.append({**c, "embedding": vec})
         except Exception as e:
-            print(f"Skipping chunk {i} due to error: {e}")
+            print(f"[embed_chunks] skip chunk {idx}: {e}", flush=True)
     return embedded
 
-
-def retrieve_top_k(index, metadata, query_text, k=5) -> list[str]:
-    """Retrieves the top k most similar texts from the index based on the query"""
-
-    query_vec = embed_text(query_text).astype("float32").reshape(1, -1)
-    istances, indices = index.search(query_vec, k)
-    top_texts = [metadata[i]["text"] for i in indices[0] if i < len(metadata)]
-    return top_texts
+def retrieve_top_k(index, metadata, query_text, k=5):
+    """
+    Retrieves the top-k most similar chunks from FAISS.
+    Returns a list of metadata dicts augmented with 'score'.
+    """
+    q_vec = embed_text(query_text).reshape(1, -1)
+    distances, indices = index.search(q_vec, k)
+    results = []
+    for dist, idx in zip(distances[0], indices[0]):
+        if 0 <= idx < len(metadata):
+            m = metadata[idx].copy()
+            m["score"] = float(dist)
+            results.append(m)
+    return results
