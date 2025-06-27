@@ -8,7 +8,7 @@ from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import AuthService
 from fastapi import Cookie
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Cookie settings

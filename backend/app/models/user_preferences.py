@@ -4,6 +4,10 @@ from app.models.base import Base, PKMixin
 
 class UserPreferences(Base, PKMixin):
     __tablename__ = "user_preferences"
+    
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), unique=True, nullable=False
+    )
+    user = relationship("User", uselist=False, back_populates="user_preferences")
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
-    user = relationship("User", back_populates="preferences")
+    news_preferences: Mapped[str] = mapped_column(String)

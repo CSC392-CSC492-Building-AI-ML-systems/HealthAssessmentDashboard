@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.schemas.user import UserCreate
+from app.schemas.user_preferences import UserPreferencesCreate
 from app.core.config import settings
 
 # Configure password hashing
