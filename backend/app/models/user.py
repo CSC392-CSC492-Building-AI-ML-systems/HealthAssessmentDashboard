@@ -1,10 +1,21 @@
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-from app.db.sqlite import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, String
+from app.models.base import Base, TimestampMixin, PKMixin
 
-class User(Base):
+class User(Base, PKMixin, TimestampMixin):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str] = mapped_column(String, unique=True)
+    email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
+    first_name: Mapped[str] = mapped_column(String)
+    last_name: Mapped[str] = mapped_column(String)
+    password_hash: Mapped[str] = mapped_column(String)
+
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organizations.id"), index=True
+    )
+    organization = relationship("Organization", back_populates="users")
+
+    # FOR NOW, A USER HAS ONE UserPreferences OBJECT; COULD CHANGE LATER IF PREFERENCES ARE MORE INTRICATE THAN A STRING SUMMARY
+    user_preferences = relationship(
+        "UserPreferences", uselist=False, back_populates="user", cascade="all, delete"
+    )
