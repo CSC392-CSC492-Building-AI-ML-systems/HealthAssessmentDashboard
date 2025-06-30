@@ -43,7 +43,7 @@ def download_blob(blob_name: str, download_path: str):
         f.write(blob_client.download_blob().readall())
 
 def blob_exists(blob_name: str) -> bool:
-    return any(blob.name == blob_name for blob in container_client.list_blobs(name_starts_with=blob_name))
+    return any(b.name == blob_name for b in container_client.list_blobs(name_starts_with=blob_name))
 
 
 def load_embeddings():
@@ -101,11 +101,12 @@ def save_embeddings(chunk_embeddings: List[dict], drug_name: str, therapeutic_ar
         vectors.append(vector)
         _global_metadata.append({
             "id": str(uuid.uuid4()),
-            "text": entry["text"],
-            "section_title": entry["text"].get("section_title", ""),
             "drug_name": drug_name,
             "therapeutic_area": therapeutic_area,
-            "chunk_index": i
+            "source": entry["source"],
+            "page": entry["page"],
+            "section_title": entry["section_title"],
+            "text": entry["text"]
         })
 
     vectors_np = np.vstack(vectors)

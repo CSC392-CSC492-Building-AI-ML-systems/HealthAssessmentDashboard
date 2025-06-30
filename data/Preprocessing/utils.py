@@ -29,29 +29,45 @@ def download_pdfs(links, project_number):
             print(f"Failed to download {link}: {e}")
     return filepaths
 
-def text_from_pdfs(filepaths):
-    """Extract text from a list of PDF filepaths using pdfplumber"""
-    all_blocks = []
-    for path in filepaths:
-        blocks = extract_text_with_structure(path)
-        all_blocks.extend(blocks)
-    print(f"Extracted {len(all_blocks)} text blocks from {len(filepaths)} PDFs.", flush=True)
-    return all_blocks
-
 def extract_text_with_structure(filepath):
-    """Extract text from PDF while preserving structure using pdfplumber
-    Returns a list of text blocks"""
-    text_blocks = []
+    """
+    Extracts text from each page of a PDF, preserving page numbers and rough structure.
+    Returns a list of dicts: { 'source': filepath, 'page': int, 'text': str }.
+    """
+    results = []
     try:
         with pdfplumber.open(filepath) as pdf:
-            for page in pdf.pages:
-                lines = page.extract_text(layout=True).split('\n')
-                for line in lines:
-                    text_blocks.append(line.strip())
+            for i, page in enumerate(pdf.pages, start=1):
+                raw = page.extract_text(layout=True) or ""
+                lines = [ln.strip() for ln in raw.split("\n") if ln.strip()]
+                if not lines:
+                    continue
+                results.append({
+                    "source": filepath,
+                    "page": i,
+                    "lines": lines
+                })
     except Exception as e:
-        print(f"Error reading {filepath} with pdfplumber: {e}")
-    print(f"Extracted {len(text_blocks)} text blocks from {filepath}.", flush=True)
-    return text_blocks
+        print(f"[extract_text_with_structure] {filepath}: {e}")
+    print(f"Extracted text from {filepath}: {len(results)} pages.", flush=True)
+    return results
+
+def text_from_pdfs(filepaths):
+    """
+    Converts each page → lines dict into a flat list of line‐blocks.
+    """
+    all_blocks = []
+    for path in filepaths:
+        pages = extract_text_with_structure(path)
+        for p in pages:
+            for line in p["lines"]:
+                all_blocks.append({
+                    "source": p["source"],
+                    "page": p["page"],
+                    "text": line
+                })
+    print(f"Extracted {len(all_blocks)} lines from {len(filepaths)} PDFs.", flush=True)
+    return all_blocks
 
 def normalize_generic_name(name: str):
     """
