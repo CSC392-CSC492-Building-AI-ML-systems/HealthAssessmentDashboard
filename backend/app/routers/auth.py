@@ -41,7 +41,7 @@ async def signup(
         key=REFRESH_TOKEN_KEY,
         value=refresh_token,
         httponly=True,
-        secure=True,  # for HTTPS only
+        secure=False,  # TODO: change to True for production
         samesite="strict",  # CSRF protection
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"  # Only sent to refresh endpoint
@@ -73,7 +73,7 @@ async def login(
         key=REFRESH_TOKEN_KEY,
         value=refresh_token,
         httponly=True,
-        secure=True,  # for HTTPS only
+        secure=False,  # TODO: change to True for production
         samesite="strict",  # CSRF protection
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"  # Only sent to refresh endpoint
@@ -114,7 +114,7 @@ async def refresh_token(
         key=REFRESH_TOKEN_KEY,
         value=new_refresh_token,
         httponly=True,
-        secure=True,
+        secure=False,  # TODO: change to True for production
         samesite="strict",
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"
