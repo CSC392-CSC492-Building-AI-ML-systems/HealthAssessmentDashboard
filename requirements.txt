@@ -80,3 +80,5 @@ webdriver-manager==4.0.2
 websocket-client==1.8.0
 wsproto==1.2.0
 xarray==2025.4.0
+pytest==7.4.4
+pytest-cov==4.1.0
