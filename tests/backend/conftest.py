@@ -4,8 +4,9 @@ import sys
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Make sure the backend package (which contains the `app` module) is importable.
@@ -17,16 +18,11 @@ if str(BACKEND_PATH) not in sys.path:
 from app.db.sqlite import get_db
 from app.models.base import Base
 from app.routers.auth import router as auth_router
-from app.core.config import settings
-
-# GLOBAL SETTINGS FOR TESTING
-settings.jwt_secret_key = "TEST_SECRET_KEY"
 
 # create an isolated sqlite db for each test run
 TEST_DB_URL_TEMPLATE = "sqlite+aiosqlite:///{db_file}"
 
-
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 def event_loop():
     """Create an event loop for the entire test session (pytest-asyncio requirement)."""
     loop = asyncio.new_event_loop()
@@ -34,7 +30,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def _engine(tmp_path_factory):
     """Create the test database engine and initialise the schema once."""
     db_dir = tmp_path_factory.mktemp("db")
@@ -53,7 +49,7 @@ async def _engine(tmp_path_factory):
     await engine.dispose()
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 async def _session(_engine):
     """Provide a fresh SQLAlchemy AsyncSession to every test function."""
     async_session = async_sessionmaker(_engine, expire_on_commit=False, class_=AsyncSession)
@@ -65,7 +61,7 @@ async def _session(_engine):
         yield session
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 async def app(_session):
     """Create a FastAPI app instance with dependency overrides for testing."""
 
@@ -76,17 +72,18 @@ async def app(_session):
     application = FastAPI()
     application.include_router(auth_router, prefix="/auth", tags=["auth"])
     application.dependency_overrides[get_db] = override_get_db
-    return application
+    yield application
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 async def client(app):
     """Return an httpx.AsyncClient that targets the test app."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 def test_user():
     """Default user payload used across auth endpoint tests."""
     return {
