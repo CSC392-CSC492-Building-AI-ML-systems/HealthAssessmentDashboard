@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.db.mongo import get_mongo_client
 from app.core.config import settings
 from app.models.user import User
 from app.db.sqlite import SessionLocal, get_db

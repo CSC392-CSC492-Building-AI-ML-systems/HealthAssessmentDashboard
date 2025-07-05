@@ -1,88 +1,92 @@
-import uuid
-from datetime import datetime
 from fastapi import UploadFile
-from typing import List, Optional
-from pymongo.collection import Collection
-from app.db.mongo import get_mongo_client
-from app.core.config import settings
+from app.models.chat_message import ChatMessage
+from app.models.chat_history import ChatHistory
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, delete
 
 class ChatbotService:
-    def __init__(self):
-        self.collection: Collection = get_mongo_client()[settings.mongo_db]["chat_sessions"]
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-    def create_chat(self, user_id: int, title: str) -> dict:
-        session_id = str(uuid.uuid4())
-        doc = {
-            "session_id": session_id,
-            "user_id": user_id,
-            "title": title,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "messages": []
-        }
-        self.collection.insert_one(doc)
-        return doc
+    async def create_chat(self, user_id: int, title: str):
+        """Create a new chat session for a user"""
+        chat = ChatHistory(chat_summary=title, user_id=user_id)
+        self.db.add(chat)
+        await self.db.commit()
+        await self.db.refresh(chat)
+        return chat
 
-    def get_sessions(self, user_id: int) -> List[dict]:
+    async def get_sessions(self, user_id: int):
         """Retrieve all chat sessions for a specific user"""
-        return list(self.collection.find({"user_id": user_id}))
-
-    def get_session(self, session_id: str, user_id: int) -> Optional[dict]:
-        """Retrieve a specific chat session by session_id and user_id"""
-        return self.collection.find_one({"session_id": session_id, "user_id": user_id})
-
-    def rename_session(self, session_id: str, user_id: int, new_title: str) -> Optional[dict]:
-        """Rename a chat session by updating its title"""
-        result = self.collection.update_one(
-            {"session_id": session_id, "user_id": user_id},
-            {"$set": {"title": new_title, "updated_at": datetime.utcnow()}}
+        result = await self.db.execute(
+            select(ChatHistory).where(ChatHistory.user_id == user_id)
         )
-        if result.modified_count == 0:
-            return None
-        return self.get_session(session_id, user_id)
+        return result.scalars().all()
 
-    def delete_session(self, session_id: str, user_id: int) -> bool:
+    async def get_session(self, session_id: int, user_id: int):
+        """Retrieve a specific chat session by session_id and user_id"""
+        result = await self.db.execute(
+            select(ChatHistory).where(ChatHistory.id == session_id, ChatHistory.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def rename_session(self, session_id: int, user_id: int, new_title: str):
+        """Rename a chat session by updating its title"""
+        result = await self.db.execute(
+            update(ChatHistory)
+            .where(ChatHistory.id == session_id, ChatHistory.user_id == user_id)
+            .values(chat_summary=new_title)
+            .execution_options(synchronize_session="fetch")
+        )
+        await self.db.commit()
+        return result.rowcount > 0
+
+    async def delete_session(self, session_id: int, user_id: int):
         """Delete a chat session by session_id and user_id"""
-        result = self.collection.delete_one({"session_id": session_id, "user_id": user_id})
-        return result.deleted_count > 0
+        result = await self.db.execute(
+            delete(ChatHistory).where(ChatHistory.id == session_id, ChatHistory.user_id == user_id)
+        )
+        await self.db.commit()
+        return result.rowcount > 0
 
-    def send_message(self, session_id: str, user_id: int, message: str) -> dict:
+    async def send_message(self, session_id: int, user_id: int, message: str):
         """Send a message in a chat session and return the bot's response"""
-        session = self.get_session(session_id, user_id)
+        session = await self.get_session(session_id, user_id)
         if not session:
             raise ValueError("Session not found")
 
-        user_msg = {
-            "role": "user",
-            "content": message,
-            "timestamp": datetime.utcnow()
-        }
-        self.collection.update_one(
-            {"session_id": session_id, "user_id": user_id},
-            {"$push": {"messages": user_msg}}
+        user_msg = ChatMessage(
+            role="USER",
+            content=message,
+            chat_history_id=session_id
         )
+        self.db.add(user_msg)
 
         # TODO: Implement actual bot response logic involves implementing the 
         # RAG pipeline and LLM response generation - OUR-45
-        
-        bot_msg = {
-            "role": "assistant",
-            "content": f"Bot received: '{message}'",
-            "timestamp": datetime.utcnow()
-        }
-        self.collection.update_one(
-            {"session_id": session_id, "user_id": user_id},
-            {"$push": {"messages": bot_msg}}
+
+        bot_msg = ChatMessage(
+            role="ASSISTANT",
+            content=f"Bot received: '{message}'",
+            chat_history_id=session_id
         )
+        self.db.add(bot_msg)
+        await self.db.commit()
 
-        return {"user_message": user_msg["content"], "bot_response": bot_msg["content"]}
+        return {"user_message": user_msg.content, "bot_response": bot_msg.content}
 
-    def get_messages(self, session_id: str, user_id: int) -> List[dict]:
+    async def get_messages(self, session_id: int, user_id: int):
         """Retrieve all messages in a chat session"""
-        session = self.get_session(session_id, user_id)
+        session = await self.get_session(session_id, user_id)
         if not session:
             raise ValueError("Session not found")
-        return session.get("messages", [])
+
+        result = await self.db.execute(
+            select(ChatMessage)
+            .where(ChatMessage.chat_history_id == session_id)
+            .order_by(ChatMessage.created_at)
+        )
+        return result.scalars().all()
 
     def upload_context_file(self, session_id: str, user_id: int, file: UploadFile) -> bool:
         """Upload a context file for a chat session"""
