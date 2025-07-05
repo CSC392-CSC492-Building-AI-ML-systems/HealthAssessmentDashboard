@@ -19,3 +19,4 @@ class User(Base, PKMixin, TimestampMixin):
     user_preferences = relationship(
         "UserPreferences", uselist=False, back_populates="user", cascade="all, delete"
     )
+    chat_histories = relationship("ChatHistory", back_populates="user", cascade="all, delete-orphan")
