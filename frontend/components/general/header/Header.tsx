@@ -4,14 +4,15 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import Link from 'next/link';
 import React, { useEffect, useState } from "react";
-import Toggle from "./theme/Toggle";
-import Login from "./LoginButton";
+import Toggle from "../theme/Toggle";
+import Login from "../LoginButton";
 
 type HeaderMode = "full" | "logo-only";
 
 interface HeaderProps {
     mode?: HeaderMode;
 }
+
 const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
     const { theme } = useTheme();
 

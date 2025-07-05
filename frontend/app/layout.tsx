@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Footer from "@/components/general/Footer";
-import Header from "@/components/general/HeaderWithMode";
+import Footer from "@/components/general/footer/FooterWithMode";
+import Header from "@/components/general/header/HeaderWithMode";
 import { cookies } from "next/headers";
 import { LightDarkProvider } from "@/components/general/theme/LightDarkProvider";
 import { Inter, Outfit } from 'next/font/google';

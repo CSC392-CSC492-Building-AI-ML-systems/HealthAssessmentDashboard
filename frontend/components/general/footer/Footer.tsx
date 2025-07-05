@@ -3,7 +3,15 @@
 import React from "react";
 import Link from 'next/link';
 
-const Footer: React.FC = () => {
+type FooterMode = "full" | "empty";
+
+interface FooterProps {
+  mode?: FooterMode;
+}
+
+const Footer: React.FC<FooterProps> = ({ mode = "full" }) => {
+  if (mode === "empty") return null;
+
   return (
     <footer className="bg-[var(--background)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">
       {/* Copyright on left */}
