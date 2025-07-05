@@ -8,6 +8,32 @@ import { Eye, EyeOff } from "lucide-react";
 
 const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newErrors: { email?: string; password?: string } = {};
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            newErrors.email = "Please enter a valid email address.";
+        }
+
+        if (password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters long.";
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            // ADD LOGIN LOGIC IN NEXT TICKET
+
+            setEmail("")
+            setPassword("")
+        }
+    };
+
 
     return (
         <div className="flex items-center justify-center h-[80vh] bg-[var(--background)]">
@@ -24,8 +50,8 @@ const Login: React.FC = () => {
                         Welcome to OurPATHS
                     </div>
                     <div className="pl-6 pr-6">
-                        <form>
-                            <div className="mb-[30px]">
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-[20px]">
                                 <label
                                     htmlFor="email"
                                     className="block text-lg mb-2 font-semibold"
@@ -34,16 +60,23 @@ const Login: React.FC = () => {
                                 </label>
                                 <input
                                     id="email"
+
                                     placeholder="name@email.com"
-                                    type="email"
-                                    className="w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--button-red)]"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.email
+                                        ? "border-2 border-red-500 focus:ring-red-500"
+                                        : "focus:ring-[var(--button-red)]"
+                                        }`}
                                     style={{
-                                        borderColor: "var(--brand-light)",
                                         backgroundColor: "white",
                                         color: "var(--brand-dark)",
                                         fontFamily: "var(--font-body)",
                                     }}
                                 />
+                                {errors.email && (
+                                    <p className="text-red-500 mt-2 text-sm">{errors.email}</p>
+                                )}
                             </div>
                             <div className="mb-6">
                                 <label
@@ -58,9 +91,13 @@ const Login: React.FC = () => {
                                         id="password"
                                         type={showPassword ? "text" : "password"}
                                         placeholder="••••••••••"
-                                        className="w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--button-red)]"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.password
+                                            ? "border-2 border-red-500 focus:ring-red-500"
+                                            : "focus:ring-[var(--button-red)]"
+                                            }`}
                                         style={{
-                                            borderColor: "var(--brand-light)",
                                             backgroundColor: "white",
                                             color: "var(--brand-dark)",
                                             fontFamily: "var(--font-body)",
@@ -75,6 +112,9 @@ const Login: React.FC = () => {
                                     >
                                         {showPassword ? <EyeOff size={25} /> : <Eye size={25} />}
                                     </button>
+                                    {errors.password && (
+                                        <p className="text-red-500 mt-2 text-sm">{errors.password}</p>
+                                    )}
                                 </div>
                             </div>
                             <button
