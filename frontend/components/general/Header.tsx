@@ -5,15 +5,20 @@ import { useTheme } from "next-themes";
 import Link from 'next/link';
 import React, { useEffect, useState } from "react";
 import Toggle from "./theme/Toggle";
-import Login from "./Login";
+import Login from "./LoginButton";
 
-const Header: React.FC = () => {
+type HeaderMode = "full" | "logo-only";
+
+interface HeaderProps {
+    mode?: HeaderMode;
+}
+const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
     const { theme } = useTheme();
 
     const logo =
-    theme === "dark"
-      ? "/ourpaths-light.png"
-      : "/ourpaths-dark.png";
+        theme === "dark"
+            ? "/ourpaths-light.png"
+            : "/ourpaths-dark.png";
 
     return (
         <nav className="bg-[var(--background)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">
@@ -25,13 +30,15 @@ const Header: React.FC = () => {
             </div>
 
             {/* Nav Links */}
-            <div className="flex items-center space-x-6 text-[var(--text-light)]">
-                <Link href="/" className="hover:text-gray-400">Home</Link>
-                <Link href="/about" className="hover:text-gray-400">About</Link>
-                <Link href="/contact" className="hover:text-gray-400">Contact</Link>
-                <Login />
-                <Toggle />
-            </div>
+            {mode === "full" && (
+                <div className="flex items-center space-x-6 text-[var(--text-light)]">
+                    <Link href="/" className="hover:text-gray-400">Home</Link>
+                    <Link href="/about" className="hover:text-gray-400">About</Link>
+                    <Link href="/contact" className="hover:text-gray-400">Contact</Link>
+                    <Login />
+                    <Toggle />
+                </div>
+            )}
         </nav>
 
     );
