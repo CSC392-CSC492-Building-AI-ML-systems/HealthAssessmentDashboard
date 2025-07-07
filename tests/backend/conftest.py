@@ -18,6 +18,7 @@ if str(BACKEND_PATH) not in sys.path:
 from app.db.sqlite import get_db
 from app.models.base import Base
 from app.routers.auth import router as auth_router
+from app.routers.chatbot import router as chat_router
 
 # create an isolated sqlite db for each test run
 TEST_DB_URL_TEMPLATE = "sqlite+aiosqlite:///{db_file}"
@@ -71,6 +72,7 @@ async def app(_session):
 
     application = FastAPI()
     application.include_router(auth_router, prefix="/auth", tags=["auth"])
+    application.include_router(chat_router, prefix="/chat", tags=["chat"])
     application.dependency_overrides[get_db] = override_get_db
     yield application
 
