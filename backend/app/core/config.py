@@ -2,8 +2,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str
-    mongo_uri: str
-    mongo_db: str
     sqlite_path: str
     jwt_secret_key: str
 
