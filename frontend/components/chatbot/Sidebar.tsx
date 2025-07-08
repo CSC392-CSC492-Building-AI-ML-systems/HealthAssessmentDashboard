@@ -1,3 +1,4 @@
+// TODO: replace report bug button link with real email address/modal to real email address.
 import { useChat } from "./ChatContext";
 
 export default function Sidebar() {
@@ -14,7 +15,7 @@ export default function Sidebar() {
 
     // visually render sidebar layout, title, new chats, and report bug at the bottom
     return (
-        <aside className="w-64 bg-gray-900 text-white p-4 flex flex-col justify-between">
+        <aside className="w-64 bg-[var(--brand-dark)] text-[var(--text-light)] p-4 flex flex-col justify-between">
         <div>
             <h1 className="text-xl font-semibold mb-6">OurPATHS</h1>
             <button onClick={handleNewChat} className="mb-4 w-full text-left">
@@ -35,7 +36,12 @@ export default function Sidebar() {
             ))}
          </ul>
         </div>
-        <button className="text-sm text-blue-400 hover:underline">Report Bug</button>
+        <a
+            href="mailto:placeholder@ourpaths.com?subject=Bug Report&body=Describe your issue here..."
+            className="text-sm text-blue-400 hover:underline"
+        >
+            Report Bug
+        </a>
         </aside>
     );
     }   
