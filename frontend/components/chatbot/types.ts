@@ -2,7 +2,7 @@
 //1: Chatmessage: contains a unique ID, role to show who sent the message, text to show what was said, and timestamp to show when.
 export type ChatMessage = {
   id: string;
-  role: 'user' | 'bot';
+  role: "user" | "bot";
   text: string;
   timestamp?: string;
 };
