@@ -23,7 +23,7 @@ export default function ChatInput() {
     const botMessage: ChatMessage = {
       id: uuidv4(),
       role: "bot",
-      text: "Thanks for your message! This is a dummy response.",
+      text: "Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.",
     };
 
     const updatedChats = chats.map((chat) => {
@@ -39,14 +39,13 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="px-6 py-4 bg-[var(--background)] border-t-0">
-      {/* <div className="flex items-center w-full rounded-full px-4 py-3 bg-[var(--input-bg)] shadow-md dark:shadow-[0_0_0_1px_rgba(255,255,255,0.15)] gap-4"> */}
-    <div
+    <div className="w-full flex justify-center px-4 pb-4 bg-[var(--main-body)] border-t-0">
+    <div className="w-full max-w-4xl">
+      <div
         className="flex items-center w-full rounded-full px-4 py-3 bg-[var(--input-bg)] gap-4
-            shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_6px_rgba(0,0,0,0.1)]
-            dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(255,255,255,0.05),0_6px_12px_rgba(255,255,255,0.03)]"
-        >
-
+        shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_6px_rgba(0,0,0,0.1)]
+        dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(255,255,255,0.05),0_6px_12px_rgba(255,255,255,0.03)]"
+      >
         {/* Add button for file upload */}
         <button
           title="Add"
@@ -85,6 +84,7 @@ export default function ChatInput() {
         >
           <Send className="w-5 h-5 text-[var(--input-text)]" />
         </button>
+      </div>
       </div>
     </div>
   );
