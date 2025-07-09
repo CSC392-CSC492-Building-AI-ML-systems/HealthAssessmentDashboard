@@ -1,47 +1,83 @@
-// TODO: replace report bug button link with real email address/modal to real email address.
-import { useChat } from "./ChatContext";
+// TODO: replace report bug button link with real email address/modal to real email address. 
+"use client";
 
-export default function Sidebar() {
-    // pull shared state from context
+import { useState } from "react";
+import { useChat } from "./ChatContext";
+import { Menu, Plus, Bug } from "lucide-react";
+
+interface SidebarProps {
+  open: boolean;
+}
+
+export default function Sidebar({ open }: SidebarProps) {
+    const [collapsed, setCollapsed] = useState(false);
     const { chats, setChats, currentChatId, setCurrentChatId } = useChat();
 
-    // create a new session
     const handleNewChat = () => {
         const nextId = chats.length + 1;
-        const newChat = { id: nextId, title: `New Chat ${nextId}`, messages: [] };
+        const newChat = {
+        id: nextId,
+        title: `New Chat ${nextId}`,
+        messages: [],
+        };
         setChats([newChat, ...chats]);
         setCurrentChatId(nextId);
     };
 
-    // visually render sidebar layout, title, new chats, and report bug at the bottom
     return (
-        <aside className="w-64 bg-[var(--brand-dark)] text-[var(--text-light)] p-4 flex flex-col justify-between">
-        <div>
-            <h1 className="text-xl font-semibold mb-6">OurPATHS</h1>
-            <button onClick={handleNewChat} className="mb-4 w-full text-left">
-                ➕ New Chat
+        <aside
+        className={`transition-all duration-300 ease-in-out bg-[var(--brand-dark)] text-[var(--text-light)] 
+        h-screen flex flex-col justify-between p-4 shadow-lg
+        ${collapsed ? "w-[60px]" : "w-[250px]"}`}
+        >
+        {/* Top Section */}
+        <div className="space-y-4">
+            {/* Toggle Button */}
+            <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-[var(--text-light)] hover:opacity-70"
+            >
+            <Menu className="w-6 h-6" />
             </button>
-            <ul className="space-y-2">
-            {chats.map((chat) => (
+
+            {/* New Chat */}
+            <button
+            onClick={handleNewChat}
+            className="flex items-center gap-2 text-sm hover:opacity-80"
+            >
+            <Plus className="w-5 h-5" />
+            {!collapsed && <span>New Chat</span>}
+            </button>
+
+            {/* Chat Sessions */}
+            {!collapsed && (
+            <ul className="space-y-2 pt-4">
+                {chats.map((chat) => (
                 <li key={chat.id}>
-                <button
-                    className={`w-full text-left rounded px-2 py-1 ${
-                    chat.id === currentChatId ? "bg-gray-700" : "hover:bg-gray-800"
+                    <button
+                    className={`w-full text-left text-sm rounded px-2 py-1 ${
+                        chat.id === currentChatId
+                        ? "bg-gray-700"
+                        : "hover:bg-gray-800"
                     }`}
                     onClick={() => setCurrentChatId(chat.id)}
-                >
+                    >
                     {chat.title}
-                </button>
+                    </button>
                 </li>
-            ))}
-         </ul>
+                ))}
+            </ul>
+            )}
         </div>
+
+        {/* Report Bug Button */}
         <a
             href="mailto:placeholder@ourpaths.com?subject=Bug Report&body=Describe your issue here..."
-            className="text-sm text-blue-400 hover:underline"
+            className="text-sm flex items-center gap-2 hover:underline"
         >
-            Report Bug
+            <Bug className="w-4 h-4" />
+            {!collapsed && <span>Report Bug</span>}
         </a>
         </aside>
     );
-    }   
+    }
