@@ -1,9 +1,12 @@
 // TODO: replace report bug button link with real email address/modal to real email address. 
+// TODO: add a shadow to the right/ fix the code below:
+//             shadow-[10px_0_20px_rgba(0,0,0,0.4)] dark:shadow-[2px_0_8px_rgba(255,255,255,0.05)]`}
+
 "use client";
 
 import { useState } from "react";
 import { useChat } from "./ChatContext";
-import { Menu, Plus, Bug } from "lucide-react";
+import { Menu, SquarePen, Bug } from "lucide-react";
 
 interface SidebarProps {
   open: boolean;
@@ -24,60 +27,81 @@ export default function Sidebar({ open }: SidebarProps) {
         setCurrentChatId(nextId);
     };
 
-    return (
-        <aside
-        className={`transition-all duration-300 ease-in-out bg-[var(--brand-dark)] text-[var(--text-light)] 
-        h-screen flex flex-col justify-between p-4 shadow-lg
-        ${collapsed ? "w-[60px]" : "w-[250px]"}`}
-        >
-        {/* Top Section */}
-        <div className="space-y-4">
-            {/* Toggle Button */}
-            <button
+  return (
+    <aside
+      className={`transition-all duration-300 ease-in-out
+        bg-[var(--background)] text-[var(--text-light)]
+        h-screen flex flex-col justify-between p-4
+        ${collapsed ? "w-[60px] items-center" : "w-[250px]"}
+        ${open ? "" : "hidden"}
+        shadow-[2px_0_8px_rgba(0,0,0,0.15)]`}
+    >
+      {/* Top Section */}
+      <div className={`space-y-4 w-full`}>
+        {/* Toggle Button */}
+        <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-[var(--text-light)] hover:opacity-70"
+            className={`hover:bg-[var(--hover-box)] p-2 rounded w-full
+                ${collapsed ? "flex justify-center items-center" : ""}`}
             >
-            <Menu className="w-6 h-6" />
-            </button>
+            <Menu className="w-6 h-6 shrink-0" />
+        </button>
 
-            {/* New Chat */}
-            <button
+        {/* New Chat */}
+        <button
             onClick={handleNewChat}
-            className="flex items-center gap-2 text-sm hover:opacity-80"
+            className={`text-sm hover:bg-[var(--hover-box)] rounded p-2 w-full
+                ${collapsed ? "flex justify-center items-center" : "flex items-center gap-2"}`}
             >
-            <Plus className="w-5 h-5" />
-            {!collapsed && <span>New Chat</span>}
-            </button>
+            <SquarePen className="w-5 h-5 shrink-0" />
+            {!collapsed && <span className="whitespace-nowrap">New Chat</span>}
+        </button>
 
-            {/* Chat Sessions */}
-            {!collapsed && (
-            <ul className="space-y-2 pt-4">
-                {chats.map((chat) => (
-                <li key={chat.id}>
-                    <button
-                    className={`w-full text-left text-sm rounded px-2 py-1 ${
-                        chat.id === currentChatId
-                        ? "bg-gray-700"
-                        : "hover:bg-gray-800"
+        {/* Divider */}
+        {!collapsed && (
+          <hr className="border-t border-[var(--hover-box)]" />
+        )}
+
+        {/* Chat Sessions */}
+        {!collapsed && (
+          <ul className="space-y-2 pt-2 max-h-[60vh] overflow-y-auto">
+            {chats.map((chat) => (
+              <li key={chat.id}>
+                <button
+                  onClick={() => setCurrentChatId(chat.id)}
+                  className={`w-full text-left text-sm rounded px-2 py-2 transition-colors flex
+                    ${
+                      chat.id === currentChatId
+                        ? "bg-[var(--hover-box)]"
+                        : "hover:bg-[var(--hover-box)]"
                     }`}
-                    onClick={() => setCurrentChatId(chat.id)}
-                    >
-                    {chat.title}
-                    </button>
-                </li>
-                ))}
-            </ul>
-            )}
-        </div>
+                >
+                  {chat.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-        {/* Report Bug Button */}
+        {/* Bottom Section */}
+        <div className={`${collapsed ? "flex justify-center" : ""}`}>
+        {/* Divider - Only visible when not collapsed */}
+        {!collapsed && (
+            <hr className="border-t border-[var(--hover-box)] mb-2 w-full" />
+        )}
+
+        {/* Report Bug */}
         <a
             href="mailto:placeholder@ourpaths.com?subject=Bug Report&body=Describe your issue here..."
-            className="text-sm flex items-center gap-2 hover:underline"
+            className={`text-sm p-2 rounded transition-colors w-full
+            hover:text-[var(--text-onhover-red)]
+            ${collapsed ? "flex justify-center items-center" : "flex items-center gap-2"}`}
         >
-            <Bug className="w-4 h-4" />
-            {!collapsed && <span>Report Bug</span>}
+            <Bug className="w-5 h-5 shrink-0" />
+            {!collapsed && <span className="whitespace-nowrap">Report Bug</span>}
         </a>
-        </aside>
-    );
-    }
+        </div>
+    </aside>
+  );
+}

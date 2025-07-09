@@ -15,7 +15,7 @@ export default function ChatbotPage() {
       <Sidebar open={sidebarOpen} />
 
       {/* Main area (Topbar + ChatWindow + ChatInput) */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         {/* Chat content area */}
