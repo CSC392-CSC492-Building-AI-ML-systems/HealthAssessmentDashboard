@@ -23,6 +23,8 @@ body {
   --hover-box: #e5e3f3;
   --button-onhover-red: #5A0C13;
   --gradient-color: #FFFFFF;
+  --input-bg: #ffffff;
+  --input-text: #0c1821;
 
 
 
@@ -41,6 +43,8 @@ body {
   --hover-bg: #324A5F; 
   --hover-box: #324A5F;
   --gradient-color: #262626;
+  --input-bg: #1f2937;
+  --input-text: #f4f4f4;
 
 }
 
