@@ -30,7 +30,7 @@ export default function Sidebar({ open }: SidebarProps) {
   return (
     <aside
       className={`transition-all duration-300 ease-in-out
-        bg-[var(--background)] text-[var(--text-light)]
+        bg-[var(--bars)] text-[var(--text-light)]
         h-screen flex flex-col justify-between p-4
         ${collapsed ? "w-[60px] items-center" : "w-[250px]"}
         ${open ? "" : "hidden"}
@@ -41,7 +41,7 @@ export default function Sidebar({ open }: SidebarProps) {
         {/* Toggle Button */}
         <button
             onClick={() => setCollapsed(!collapsed)}
-            className={`hover:bg-[var(--hover-box)] p-2 rounded w-full
+            className={`hover:bg-[var(--hover-box)] p-2 rounded-xl w-full
                 ${collapsed ? "flex justify-center items-center" : ""}`}
             >
             <Menu className="w-6 h-6 shrink-0" />
@@ -50,7 +50,7 @@ export default function Sidebar({ open }: SidebarProps) {
         {/* New Chat */}
         <button
             onClick={handleNewChat}
-            className={`text-sm hover:bg-[var(--hover-box)] rounded p-2 w-full
+            className={`text-sm hover:bg-[var(--hover-box)] rounded-xl p-2 w-full
                 ${collapsed ? "flex justify-center items-center" : "flex items-center gap-2"}`}
             >
             <SquarePen className="w-5 h-5 shrink-0" />
@@ -69,7 +69,7 @@ export default function Sidebar({ open }: SidebarProps) {
               <li key={chat.id}>
                 <button
                   onClick={() => setCurrentChatId(chat.id)}
-                  className={`w-full text-left text-sm rounded px-2 py-2 transition-colors flex
+                  className={`w-full text-left text-sm rounded-xl px-2 py-2 transition-colors flex
                     ${
                       chat.id === currentChatId
                         ? "bg-[var(--hover-box)]"
@@ -94,7 +94,7 @@ export default function Sidebar({ open }: SidebarProps) {
         {/* Report Bug */}
         <a
             href="mailto:placeholder@ourpaths.com?subject=Bug Report&body=Describe your issue here..."
-            className={`text-sm p-2 rounded transition-colors w-full
+            className={`text-sm p-2 rounded-xl transition-colors w-full
             hover:text-[var(--text-onhover-red)]
             ${collapsed ? "flex justify-center items-center" : "flex items-center gap-2"}`}
         >

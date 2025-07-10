@@ -1,19 +1,41 @@
 // import type definitions for messages
+"use client";
 import { ChatMessage } from "./types";
+import { useEffect, useState } from "react";
 
 export default function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
+  const [displayedText, setDisplayedText] = useState(
+    isUser ? message.text : ""
+  );
+
+  useEffect(() => {
+    if (!isUser && message.text) {
+      let index = 0;
+      const interval = setInterval(() => {
+        setDisplayedText((prev) => message.text.slice(0, index + 1));
+        index++;
+
+        if (index >= message.text.length) {
+          clearInterval(interval);
+        }
+      }, 25);
+
+      return () => clearInterval(interval);
+    }
+  }, [isUser, message.text]);
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] px-4 py-2 rounded-lg text-sm md:text-base leading-snug ${
-          isUser
-            ? "bg-[var(--brand-light)] text-[var(--brand-dark)]"
-            : "bg-[var(--feature-bg)] text-[var(--brand-dark)]"
-        }`}
+        className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm md:text-base leading-relaxed 
+          ${isUser
+            ? "bg-[var(--text-light)] text-[var(--hover-box)]"
+            : "text-[var(--text-light)]" 
+            // : "bg-[var(--feature-bg)] text-[var(--brand-dark)]"
+          }`}
       >
-        {message.text}
+        {displayedText}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
     const { theme, setTheme } = useTheme();
 
     return (
-        <header className="flex items-center justify-between px-6 py-4 bg-[var(--background)] text-[var(--foreground)] border-b border-[var(--feature-bg)]">
+        <header className="flex items-center justify-between px-6 py-4 bg-[var(--bars)] text-[var(--foreground)] border-b border-[var(--feature-bg)]">
         {/* Left: Toggle button + Logo */}
         <div className="flex items-center space-x-4">
             {/* Sidebar toggle (mobile only) */}
