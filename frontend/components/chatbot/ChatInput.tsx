@@ -23,7 +23,7 @@ export default function ChatInput() {
     const botMessage: ChatMessage = {
       id: uuidv4(),
       role: "bot",
-      text: "Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message! This is a dummy response.Thanks for your message!",
+      text: "Thanks for your message! This is a dummy response.",
     };
 
     const updatedChats = chats.map((chat) => {

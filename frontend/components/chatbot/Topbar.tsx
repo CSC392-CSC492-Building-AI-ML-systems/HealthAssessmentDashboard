@@ -22,6 +22,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
             ☰
             </button>
 
+            {/*TODO: SWITCH LOGOS*/}
             <img src="/ourpaths-light.png" alt="OurPATHS logo" className="h-12 w-auto" />
         </div>
 
@@ -31,7 +32,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
             href="/dashboard"
             className="bg-[var(--button-red)] text-white px-4 py-2 rounded-full text-sm hover:opacity-90"
             >
-            Launch Dashboard
+            Dashboard
             </a>
 
             {/* Theme Toggle */}
