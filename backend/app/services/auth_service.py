@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 from passlib.context import CryptContext
@@ -8,7 +9,6 @@ from fastapi import HTTPException, status
 
 from app.models.user import User
 from app.schemas.user import UserCreate
-from app.schemas.user_preferences import UserPreferencesCreate
 from app.core.config import settings
 
 # Configure password hashing
@@ -60,8 +60,12 @@ class AuthService:
 
     def create_refresh_token(self, user_id: int) -> str:
         return self.create_token(
-            {"sub": str(user_id), "type": "refresh"},
-            timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+            {
+                "sub": str(user_id),
+                "type": "refresh",
+                "jti": str(uuid.uuid4()),  # ensures a unique token every time
+            },
+            timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
         )
 
     async def create_user(self, user_data: UserCreate) -> User:

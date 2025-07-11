@@ -19,7 +19,10 @@ async def create_chat(
     title: str = Form(...),
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    return await chatbot_service.create_chat(user_id, title)
+    try:
+        return await chatbot_service.create_chat(user_id, title)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     
 # List all chat sessions for a user
 @router.get("/sessions")
@@ -27,7 +30,10 @@ async def list_chats(
     user_id: int,
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    return await chatbot_service.get_sessions(user_id)
+    try:
+        return await chatbot_service.get_sessions(user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 # Get a specific chat session by ID
 @router.get("/sessions/{session_id}")
@@ -36,10 +42,13 @@ async def get_chat(
     user_id: int,
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    session = await chatbot_service.get_session(session_id, user_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return session
+    try:
+        session = await chatbot_service.get_session(session_id, user_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return session
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 # Rename a chat session
 @router.put("/sessions/{session_id}")
@@ -49,10 +58,13 @@ async def rename_chat(
     new_title: str = Form(...),
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    updated = await chatbot_service.rename_session(session_id, user_id, new_title)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return {"detail": "Session renamed"}
+    try:
+        updated = await chatbot_service.rename_session(session_id, user_id, new_title)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"detail": "Session renamed"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 # Delete a chat session
 @router.delete("/sessions/{session_id}")
@@ -61,10 +73,13 @@ async def delete_chat(
     user_id: int,
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    success = await chatbot_service.delete_session(session_id, user_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return {"detail": "Session deleted"}
+    try:
+        success = await chatbot_service.delete_session(session_id, user_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"detail": "Session deleted"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     
 # ─────────────────────────────────────────────
 # Message endpoints
@@ -93,8 +108,8 @@ async def get_messages(
     try:
         msgs = await chatbot_service.get_messages(session_id, user_id)
         return {"messages": msgs}
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Session not found")
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 # Upload a context file for a chat session
@@ -105,7 +120,10 @@ async def upload_context(
     file: UploadFile = File(...),
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    success = chatbot_service.upload_context_file(session_id, user_id, file)
-    if not success:
-        raise HTTPException(status_code=400, detail="Upload failed")
-    return {"detail": "File uploaded"}
+    try:
+        success = await chatbot_service.upload_context_file(session_id, user_id, file)
+        if not success:
+            raise HTTPException(status_code=400, detail="Upload failed")
+        return {"detail": "File uploaded"}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

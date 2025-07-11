@@ -133,7 +133,6 @@ Create a `.env` file in both `frontend` and `backend` directories. Example:
 
 ```env
 REACT_APP_API_URL=http://localhost:5000
-DB_CONNECTION_STRING=mongodb://localhost:27017/your-db
 ```
 
 ---
