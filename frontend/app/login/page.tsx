@@ -1,15 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
-import { MagicCard } from "@/components/general/magicui/MagicCard"
-import { Eye, EyeOff } from "lucide-react";
+import React from "react";
 import AuthPage from "@/components/auth/AuthPage"
 
 const Login: React.FC = () => {
+    const onLogin = (email: string, password: string) => {
+        console.log("LOGIC HERE");
+    }
+
     return (
-        <AuthPage />
+        <AuthPage mode={"login"} onLogin={onLogin} />
     );
 }
 
