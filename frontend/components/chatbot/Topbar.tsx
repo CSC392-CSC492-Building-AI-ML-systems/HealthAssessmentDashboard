@@ -9,11 +9,14 @@ interface TopbarProps {
 export default function Topbar({ onToggleSidebar }: TopbarProps) {
     const { theme, setTheme } = useTheme();
 
+    const logo =
+        theme === "dark" ? "/ourpaths-light.png" : "/ourpaths-dark.png";
+
     return (
-        <header className="flex items-center justify-between px-6 py-4 bg-[var(--bars)] text-[var(--foreground)] border-b border-[var(--feature-bg)]">
-        {/* Left: Toggle button + Logo */}
+        <header className="flex items-center justify-between px-6 py-4 bg-[var(--bars)] text-[var(--foreground)] border-b-2 border-[var(--feature-bg)]">
+        {/* Toggle button + Logo */}
         <div className="flex items-center space-x-4">
-            {/* Sidebar toggle (mobile only) */}
+            {/* Sidebar toggle */}
             <button
             onClick={onToggleSidebar}
             className="md:hidden text-2xl focus:outline-none"
@@ -22,8 +25,8 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
             ☰
             </button>
 
-            {/*TODO: SWITCH LOGOS*/}
-            <img src="/ourpaths-light.png" alt="OurPATHS logo" className="h-12 w-auto" />
+            {/*:Logos switch according to theme*/}
+            <img src={logo} alt="OurPATHS logo" className="h-12 w-auto" />
         </div>
 
         {/* Right: Launch Dashboard + Theme Toggle */}
