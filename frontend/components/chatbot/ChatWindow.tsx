@@ -22,7 +22,7 @@ export default function ChatWindow() {
       ref={scrollRef}
       className="flex-1 overflow-y-auto px-4 py-6 bg-[var(--main-body)] text-[var(--foreground)] flex justify-center"
     >
-      <div className="w-full max-w-5xl space-y-4 pb-12">
+      <div className="w-full max-w-5xl space-y-4 pb-32">
         {currentChat?.messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}

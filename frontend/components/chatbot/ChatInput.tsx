@@ -39,52 +39,53 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="w-full flex justify-center px-4 pb-4 bg-[var(--main-body)] border-t-0">
-    <div className="w-full max-w-4xl">
-      <div
-        className="flex items-center w-full rounded-full px-4 py-3 bg-[var(--input-bg)] gap-4
-        shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_6px_rgba(0,0,0,0.1)]
-        dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(255,255,255,0.05),0_6px_12px_rgba(255,255,255,0.03)]"
-      >
-        {/* Add button for file upload */}
-        <button
-          title="Add"
-          className="hover:opacity-80 transition-opacity"
-          onClick={() => {}}
+    <div className="w-full flex justify-center px-4 mt-auto mb-6 bg-[var(--main-body)]">
+      <div className="w-full max-w-4xl">
+        <div
+          className="flex items-center w-full rounded-full px-6 py-4
+            bg-[var(--input-bg)] gap-4
+            shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_6px_rgba(0,0,0,0.1)]
+            dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(255,255,255,0.05),0_6px_12px_rgba(255,255,255,0.03)]"
         >
-          <Plus className="w-5 h-5 text-[var(--input-text)]" />
-        </button>
+          {/* Add button for file upload */}
+          <button
+            title="Add"
+            className="hover:opacity-80 transition-opacity"
+            onClick={() => {}}
+          >
+            <Plus className="w-5 h-5 text-[var(--input-text)]" />
+          </button>
 
-        {/* Input area */}
-        <input
-          type="text"
-          placeholder="Search drug submissions, timelines, or pricing..."
-          className="flex-1 bg-transparent text-[var(--input-text)] placeholder:text-[var(--input-text)] placeholder:opacity-50 focus:outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
-          }}
-        />
+          {/* Input area */}
+          <input
+            type="text"
+            placeholder="Search drug submissions, timelines, or pricing..."
+            className="flex-1 bg-transparent text-[var(--input-text)] placeholder:text-[var(--input-text)] placeholder:opacity-50 focus:outline-none"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSend();
+            }}
+          />
 
-        {/* Mic for text to speech */}
-        <button
-          title="Voice"
-          className="hover:opacity-80 transition-opacity"
-          onClick={() => {}}
-        >
-          <Mic className="w-5 h-5 text-[var(--input-text)]" />
-        </button>
+          {/* Mic for text to speech */}
+          <button
+            title="Voice"
+            className="hover:opacity-80 transition-opacity"
+            onClick={() => {}}
+          >
+            <Mic className="w-5 h-5 text-[var(--input-text)]" />
+          </button>
 
-        {/* Send button/alternative for pressing enter */}
-        <button
-          title="Send"
-          className="hover:opacity-80 transition-opacity"
-          onClick={handleSend}
-        >
-          <Send className="w-5 h-5 text-[var(--input-text)]" />
-        </button>
-      </div>
+          {/* Send button/alternative for pressing enter */}
+          <button
+            title="Send"
+            className="hover:opacity-80 transition-opacity"
+            onClick={handleSend}
+          >
+            <Send className="w-5 h-5 text-[var(--input-text)]" />
+          </button>
+        </div>
       </div>
     </div>
   );
