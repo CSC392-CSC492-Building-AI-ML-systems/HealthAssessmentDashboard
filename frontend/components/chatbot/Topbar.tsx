@@ -8,9 +8,11 @@ interface TopbarProps {
 
 export default function Topbar({ onToggleSidebar }: TopbarProps) {
     const { theme, setTheme } = useTheme();
-
+    
     const logo =
-        theme === "dark" ? "/ourpaths-light.png" : "/ourpaths-dark.png";
+        theme === "light"
+            ? "/ourpaths-dark.png"
+            : "/ourpaths-light.png";
 
     return (
         <header className="flex items-center justify-between px-6 py-4 bg-[var(--bars)] text-[var(--foreground)] border-b-2 border-[var(--feature-bg)]">
@@ -45,7 +47,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
             >
             <div
                 className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                theme === "dark" ? "translate-x-5" : ""
+                theme === "light" ? "" : "translate-x-5"
                 }`}
             />
             </button>
