@@ -35,6 +35,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // ALL POSSIBLE ERRORS FOR RED SUPPORTING TEXT
     const [errors, setErrors] = useState<{
         email?: string;
         password?: string;
@@ -42,6 +43,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         newOrgName?: string;
         newOrgProvince?: string;
         newOrgDescription?: string;
+        existingOrg?: string;
     }>({});
 
     // PREFERENCES INFO TO ONBOARD
@@ -132,7 +134,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
 
     const handleSignup = (e: React.FormEvent) => {
         e.preventDefault();
-        const newErrors: { newOrgName?: string; newOrgProvince?: string; newOrgDescription?: string } = {};
+        const newErrors: { newOrgName?: string; newOrgProvince?: string; newOrgDescription?: string; existingOrg?: string } = {};
 
         if (!useExistingOrg) {
             if (!newOrg.name) {
@@ -149,6 +151,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
 
             if (!newOrg.description) {
                 newErrors.newOrgDescription = "Please describe the organization."
+            }
+        } else {
+            if (!selectedOrg) {
+                newErrors.existingOrg = "Please select a registered organization."
             }
         }
 
@@ -447,23 +453,32 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                 </div>
 
                                                 {useExistingOrg ? (
-                                                    <select
-                                                        value={selectedOrg}
-                                                        onChange={(e) => setSelectedOrg(e.target.value)}
-                                                        className="w-full px-4 py-2 rounded-lg shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--button-red)]"
-                                                        style={{
-                                                            backgroundColor: "white",
-                                                            color: "var(--brand-dark)",
-                                                            fontFamily: "var(--font-body)",
-                                                        }}
-                                                    >
-                                                        <option value="">-- Select a registered organization --</option>
-                                                        {organizations.map((org) => (
-                                                            <option key={org} value={org}>
-                                                                {org}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <div>
+                                                        <select
+                                                            value={selectedOrg}
+                                                            onChange={(e) => setSelectedOrg(e.target.value)}
+                                                            className={`w-full px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.existingOrg
+                                                                ? "border-2 border-red-500 focus:ring-red-500"
+                                                                : "focus:ring-[var(--button-red)]"
+                                                                }`}
+                                                            style={{
+                                                                backgroundColor: "white",
+                                                                color: "var(--brand-dark)",
+                                                                fontFamily: "var(--font-body)",
+                                                            }}
+                                                        >
+                                                            <option value="">-- Select a registered organization --</option>
+                                                            {organizations.map((org) => (
+                                                                <option key={org} value={org}>
+                                                                    {org}
+                                                                </option>
+                                                            ))}
+
+                                                        </select>
+                                                        {errors.existingOrg && (
+                                                            <p className="text-red-500 text-sm mt-1">{errors.existingOrg}</p>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <>
                                                         <div className="mb-3">
