@@ -35,7 +35,14 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; newOrgName?: string }>({});
+    const [errors, setErrors] = useState<{
+        email?: string;
+        password?: string;
+        confirmPassword?: string;
+        newOrgName?: string;
+        newOrgProvince?: string;
+        newOrgDescription?: string;
+    }>({});
 
     // PREFERENCES INFO TO ONBOARD
     const [preferences, setPreferences] = useState<string[]>([]);
@@ -68,6 +75,16 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         "Yukon",
     ]
 
+    const therapeuticAreas = [
+        "Oncology",
+        "Cardiology",
+        "Neurology",
+        "Endocrinology",
+        "Dermatology",
+        "Respiratory",
+        "Urology",
+        "Ophthalmology"]
+
     function resetAuthForm(type: string) {
         if (type === "signup") {
             setEmail("");
@@ -89,7 +106,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
 
     const handleNextPage = (e: React.FormEvent) => {
         e.preventDefault();
-        const newErrors: { email?: string; password?: string; confirmPassword?: string; newOrgName?: string } = {};
+        const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
 
         if (!/\S+@\S+\.\S+/.test(email)) {
             newErrors.email = "Please enter a valid email address.";
@@ -115,10 +132,24 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
 
     const handleSignup = (e: React.FormEvent) => {
         e.preventDefault();
-        const newErrors: { email?: string; password?: string; confirmPassword?: string; newOrgName?: string } = {};
+        const newErrors: { newOrgName?: string; newOrgProvince?: string; newOrgDescription?: string } = {};
 
-        if (!useExistingOrg && organizations.includes(newOrg.name)) {
-            newErrors.newOrgName = "Already existing organization name."
+        if (!useExistingOrg) {
+            if (!newOrg.name) {
+                newErrors.newOrgName = "Please enter an organization name."
+            }
+
+            if (organizations.includes(newOrg.name)) {
+                newErrors.newOrgName = "Already existing organization name."
+            }
+
+            if (!newOrg.province) {
+                newErrors.newOrgProvince = "Please add a province."
+            }
+
+            if (!newOrg.description) {
+                newErrors.newOrgDescription = "Please describe the organization."
+            }
         }
 
         setErrors(newErrors);
@@ -354,7 +385,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                             <div className="mb-6">
                                                 <label className="block text-lg mb-2 font-semibold">News Preferences</label>
                                                 <div className="flex flex-wrap gap-2 mb-4 justify-center">
-                                                    {["Oncology", "Cardiology", "Neurology", "Endocrinology", "Dermatology", "Respiratory", "Urology", "Ophthalmology"].map((pref) => (
+                                                    {therapeuticAreas.map((pref) => (
                                                         <button
                                                             key={pref}
                                                             type="button"
@@ -460,7 +491,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                             <select
                                                                 value={newOrg.province}
                                                                 onChange={(e) => setNewOrg({ ...newOrg, province: e.target.value })}
-                                                                className="w-full px-4 py-2 rounded-lg shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--button-red)]"
+                                                                className={`w-full px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.newOrgProvince
+                                                                    ? "border-2 border-red-500 focus:ring-red-500"
+                                                                    : "focus:ring-[var(--button-red)]"
+                                                                    }`}
                                                                 style={{
                                                                     backgroundColor: "white",
                                                                     color: "var(--brand-dark)",
@@ -474,6 +508,9 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                                     </option>
                                                                 ))}
                                                             </select>
+                                                            {errors.newOrgProvince && (
+                                                                <p className="text-red-500 text-sm mt-1">{errors.newOrgProvince}</p>
+                                                            )}
                                                         </div>
 
                                                         <textarea
@@ -481,13 +518,20 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                             placeholder="Describe the organization..."
                                                             value={newOrg.description}
                                                             onChange={(e) => setNewOrg({ ...newOrg, description: e.target.value })}
-                                                            className="w-full px-4 py-2 rounded-lg shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--button-red)]"
+                                                            className={`w-full px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.newOrgDescription
+                                                                ? "border-2 border-red-500 focus:ring-red-500"
+                                                                : "focus:ring-[var(--button-red)]"
+                                                                }`}
                                                             style={{
                                                                 backgroundColor: "white",
                                                                 color: "var(--brand-dark)",
                                                                 fontFamily: "var(--font-body)",
                                                             }}
                                                         />
+
+                                                        {errors.newOrgDescription && (
+                                                            <p className="text-red-500 text-sm mt-1">{errors.newOrgDescription}</p>
+                                                        )}
                                                     </>
                                                 )}
                                             </div>
