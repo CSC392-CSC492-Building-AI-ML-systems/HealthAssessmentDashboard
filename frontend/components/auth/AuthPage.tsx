@@ -499,7 +499,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                             <button
                                                 type="button"
                                                 onClick={() => setStep(step - 1)}
-                                                className="px-4 py-2 rounded bg-[var(--button-red)] cursor-pointer hover:bg-[var(--button-onhover-red)] font-medium"
+                                                className="px-4 py-2 rounded bg-[var(--button-red)] text-white cursor-pointer hover:bg-[var(--button-onhover-red)] font-medium"
                                                 style={step === 2 ? { marginRight: '1rem' } : {}}
                                             >
                                                 Back
