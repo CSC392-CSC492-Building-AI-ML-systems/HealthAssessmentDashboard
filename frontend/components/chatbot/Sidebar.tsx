@@ -4,13 +4,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChat } from "./ChatContext";
-import { Menu, SquarePen, Bug } from "lucide-react";
+import { Menu, SquarePen, Bug, Pencil } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { ChatMessage, ChatSession } from "./types";
-import { useEffect } from "react";
-
 
 interface SidebarProps {
   open: boolean;
@@ -19,7 +17,8 @@ interface SidebarProps {
 export default function Sidebar({ open }: SidebarProps) {
     const [collapsed, setCollapsed] = useState(false);
     const { chats, setChats, currentChatId, setCurrentChatId } = useChat();
-
+    const [editingChatId, setEditingChatId] = useState<number | null>(null);
+    const [editTitle, setEditTitle] = useState("");
 
     useEffect(() => {
     if (chats.length === 0) {
@@ -36,7 +35,6 @@ export default function Sidebar({ open }: SidebarProps) {
 
     const handleNewChat = () => {
       const nextId = chats.length + 1;
-
       const newChat: ChatSession = {
         id: nextId,
         title: `New Chat ${nextId}`,
@@ -46,6 +44,13 @@ export default function Sidebar({ open }: SidebarProps) {
       setChats([newChat, ...chats]);
       setCurrentChatId(nextId);
     };
+
+    const handleRename = (id: number, newTitle: string) => {
+    const updatedChats = chats.map((chat) =>
+      chat.id === id ? { ...chat, title: newTitle.trim() || chat.title } : chat
+    );
+    setChats(updatedChats);
+  };
 
   return (
     <aside
@@ -86,23 +91,65 @@ export default function Sidebar({ open }: SidebarProps) {
         {!collapsed && (
           <ul className="space-y-2 pt-2 max-h-[60vh] overflow-y-auto">
             {chats.map((chat) => (
-              <li key={chat.id}>
-                <button
+              <li key={chat.id} className="group">
+                <div
                   onClick={() => setCurrentChatId(chat.id)}
-                  className={`w-full text-left text-sm rounded-xl px-2 py-2 transition-colors flex
-                    ${
-                      chat.id === currentChatId
-                        ? "bg-[var(--hover-box)]"
-                        : "hover:bg-[var(--hover-box)]"
-                    }`}
-                >
-                  {chat.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  className={`w-full text-left text-sm rounded-xl px-2 py-2 transition-colors flex justify-between items-center ${
+                    chat.id === currentChatId
+                      ? "bg-[var(--hover-box)]"
+                      : "hover:bg-[var(--hover-box)]"
+                  }`}
+                  >
+                    {/* Enable editing chat, pen will show on hover, can click on pen / double click to edit */}
+                    {editingChatId === chat.id ? (
+                      <input
+                        autoFocus
+                        className="bg-transparent border-b border-white text-sm focus:outline-none w-full"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onBlur={() => {
+                          handleRename(chat.id, editTitle);
+                          setEditingChatId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleRename(chat.id, editTitle);
+                            setEditingChatId(null);
+                          } else if (e.key === "Escape") {
+                            setEditingChatId(null);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-between w-full">
+                        <span
+                          className="whitespace-nowrap overflow-hidden text-ellipsis pr-2 w-full"
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingChatId(chat.id);
+                            setEditTitle(chat.title);
+                          }}
+                        >
+                          {chat.title}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingChatId(chat.id);
+                            setEditTitle(chat.title);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-gray-400 hover:text-white"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {/* Bottom Section */}
         <div className={`${collapsed ? "flex justify-center" : ""}`}>
