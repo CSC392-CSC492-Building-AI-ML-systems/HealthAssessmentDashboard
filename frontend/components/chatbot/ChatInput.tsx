@@ -39,7 +39,7 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="w-full flex justify-center px-4 mt-auto mb-6 bg-[var(--main-body)]">
+    <div className="w-full flex justify-center px-4 py-6 bg-[var(--main-body)] border-t-0">
       <div className="w-full max-w-4xl">
         <div
           className="flex items-center w-full rounded-full px-6 py-4
