@@ -13,8 +13,7 @@ export default function ChatInput() {
   const currentChat = chats.find(c => c.id === currentChatId);
   const hasNoMsgs = currentChat?.messages.length === 0;
   const hasOnlyBot = currentChat?.messages.length === 1 &&
-    currentChat.messages[0].role === "bot" &&
-    currentChat.messages[0].text.includes("Welcome");
+    currentChat.messages[0].role === "bot" 
 
   const showWelcomeHeading = hasNoMsgs || hasOnlyBot;
 
