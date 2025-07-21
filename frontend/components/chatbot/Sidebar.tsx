@@ -7,6 +7,10 @@
 import { useState } from "react";
 import { useChat } from "./ChatContext";
 import { Menu, SquarePen, Bug } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { ChatMessage, ChatSession } from "./types";
+import { useEffect } from "react";
+
 
 interface SidebarProps {
   open: boolean;
@@ -16,15 +20,31 @@ export default function Sidebar({ open }: SidebarProps) {
     const [collapsed, setCollapsed] = useState(false);
     const { chats, setChats, currentChatId, setCurrentChatId } = useChat();
 
+
+    useEffect(() => {
+    if (chats.length === 0) {
+      const newChat: ChatSession = {
+        id: 1,
+        title: "New Chat 1",
+        messages: [], // no messages on first load
+      };
+
+      setChats([newChat]);
+      setCurrentChatId(1);
+    }
+  }, []);
+
     const handleNewChat = () => {
-        const nextId = chats.length + 1;
-        const newChat = {
+      const nextId = chats.length + 1;
+
+      const newChat: ChatSession = {
         id: nextId,
         title: `New Chat ${nextId}`,
         messages: [],
-        };
-        setChats([newChat, ...chats]);
-        setCurrentChatId(nextId);
+      };
+
+      setChats([newChat, ...chats]);
+      setCurrentChatId(nextId);
     };
 
   return (

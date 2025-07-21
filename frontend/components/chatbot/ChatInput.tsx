@@ -10,6 +10,14 @@ export default function ChatInput() {
   const [input, setInput] = useState("");
   const { chats, setChats, currentChatId } = useChat();
 
+  const currentChat = chats.find(c => c.id === currentChatId);
+  const hasNoMsgs = currentChat?.messages.length === 0;
+  const hasOnlyBot = currentChat?.messages.length === 1 &&
+    currentChat.messages[0].role === "bot" &&
+    currentChat.messages[0].text.includes("Welcome");
+
+  const showWelcomeHeading = hasNoMsgs || hasOnlyBot;
+
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
@@ -39,8 +47,15 @@ export default function ChatInput() {
   };
 
   return (
-    <div className="w-full flex justify-center px-4 py-6 bg-[var(--main-body)] border-t-0">
+    <div className="w-full flex justify-center px-4 py-9 bg-[var(--main-body)] border-t-0">
       <div className="w-full max-w-4xl">
+        {/* Welcome heading to show only if its the first message */}
+        {/** TODO: Possible extension ideas: make a list of greetings and randomize them on each new chat opened. Add good morning/evening aka greeting based on user's time. Personalize greeting to username. */}
+        {showWelcomeHeading && (
+          <div className="w-full max-w-4xl mx-auto text-center mb-4">
+            <h1 className="text-2xl md:text-3xl font-sans">How can we help today?</h1>
+          </div>
+        )}
         <div
           className="flex items-center w-full rounded-full px-6 py-4
             bg-[var(--input-bg)] gap-4

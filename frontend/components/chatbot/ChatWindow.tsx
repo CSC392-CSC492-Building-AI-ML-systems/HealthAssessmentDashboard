@@ -1,4 +1,5 @@
 "use client";
+
 import { useChat } from "./ChatContext";
 import MessageBubble from "./MessageBubble";
 import { useEffect, useRef } from "react";
