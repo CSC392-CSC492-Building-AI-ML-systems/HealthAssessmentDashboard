@@ -1,6 +1,8 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import Toggle from "../general/theme/Toggle";
+
 
 interface TopbarProps {
     onToggleSidebar: () => void;
@@ -40,8 +42,10 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
             Dashboard
             </a>
 
-            {/* Theme Toggle */}
-            <button
+            {/* Theme Toggle */}        
+            <Toggle />
+            
+            {/* <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="rounded-full w-10 h-5 flex items-center bg-gray-400 dark:bg-gray-700 px-1"
             >
@@ -50,7 +54,8 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
                 theme === "light" ? "" : "translate-x-5"
                 }`}
             />
-            </button>
+            </button> */}
+
         </div>
         </header>
     );
