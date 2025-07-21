@@ -12,7 +12,7 @@ from app.models.enums import IntentEnum
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Training examples
+# Load the training examples
 _MODULE_DIR = Path(__file__).resolve().parent
 _EXAMPLES_PATH = _MODULE_DIR / "intent_examples_400.jsonl"
 
@@ -41,8 +41,6 @@ def _build_few_shot_messages() -> List[dict]:
     return messages
 
 
-_FEW_SHOT_MESSAGES = _build_few_shot_messages()
-
 def intent_classifier(query: str) -> List[IntentEnum]:
     """Classify query into a list of IntentEnum values using GPT-4o-mini (Modify if needed)."""
 
@@ -51,6 +49,9 @@ def intent_classifier(query: str) -> List[IntentEnum]:
 
     if not client.api_key:
         raise RuntimeError("OPENAI_API_KEY not set; cannot classify intents.")
+
+    # Build example messages
+    _FEW_SHOT_MESSAGES = _build_few_shot_messages()
 
     messages = [{"role": "system", "content": _SYSTEM_PROMPT}] + _FEW_SHOT_MESSAGES
     messages.append({"role": "user", "content": query})
