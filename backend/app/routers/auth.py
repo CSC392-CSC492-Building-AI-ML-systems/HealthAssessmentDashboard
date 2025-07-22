@@ -17,8 +17,7 @@ COOKIE_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 
 # Helper function to get auth service
 async def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
-    async with db as session:
-        return AuthService(session)
+    return AuthService(db)
 
 @router.post("/signup", response_model=dict)
 async def signup(
