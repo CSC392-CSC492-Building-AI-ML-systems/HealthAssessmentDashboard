@@ -4,6 +4,7 @@ import Footer from "@/components/general/footer/FooterWithMode";
 import Header from "@/components/general/header/HeaderWithMode";
 import { cookies } from "next/headers";
 import { LightDarkProvider } from "@/components/general/theme/LightDarkProvider";
+import { ToastProvider } from "@/components/general/ToastProvider";
 import { Inter, Outfit } from 'next/font/google';
 import "./globals.css";
 
@@ -52,15 +53,17 @@ export default async function RootLayout({
         <div className="flex flex-col min-h-screen">
           {/* Header */}
           <LightDarkProvider>
-            <Header />
+            <ToastProvider position="top-center" maxToasts={3}>
+              <Header />
 
-            {/* Middle content */}
-            <main className="flex-1">
-              {children}
-            </main>
+              {/* Middle content */}
+              <main className="flex-1">
+                {children}
+              </main>
 
-            {/* Footer */}
-            <Footer />
+              {/* Footer */}
+              <Footer />
+            </ToastProvider>
           </LightDarkProvider>
         </div>
       </body>
