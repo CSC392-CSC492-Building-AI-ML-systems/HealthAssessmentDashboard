@@ -171,7 +171,7 @@ class ChatbotService:
         # 1) Classify the query.
         intents = intent_classifier(query)
         if not intents:
-            return []  # nothing to do
+            return []
 
         # 2) Establish order of execution of the tools
         ordered_intents = [
@@ -197,9 +197,9 @@ class ChatbotService:
 
             elif intent == IntentEnum.PRICE_REC_SERVICE:
                 # Metadata from the USER vector-DB; fall back to CDA if USER is not available
-                data_source = user_metadata or cda_metadata or {}
-                # TODO: Structure the data_source into the structure expected by the ML model.
-                prediction = price_rec_service.predict({"metadata": data_source})
+                meta_data = user_metadata or cda_metadata or {}
+                # TODO: Structure the metadata into the structure expected by the ML model.
+                prediction = price_rec_service.predict({"metadata": meta_data})
                 responses.append({"intent": intent, "response": prediction})
 
             elif intent == IntentEnum.TIMELINE_REC_SERVICE:
