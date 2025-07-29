@@ -10,7 +10,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 _SYSTEM_PROMPT = (
     "You are an intent classification assistant for a pharma chatbot. "
     "Possible intents are: "
-    "\"CDA_VECTORDB\", \"USER_VECTORDB\", \"PRICE_REC_SERVICE\", \"TIMELINE_REC_SERVICE\". "
+    "\"VECTORDB\", \"PRICE_REC_SERVICE\", \"TIMELINE_REC_SERVICE\". "
     "Return only a JSON array of one or more of those strings. "
     "If none apply, return []. Do not add any other text."
 )
