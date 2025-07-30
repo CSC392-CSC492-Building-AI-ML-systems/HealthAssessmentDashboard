@@ -65,8 +65,8 @@ export interface UserProfile {
  * User preferences for therapeutic areas and custom settings
  */
 export interface UserPreferences {
-  selected_therapeutic_areas: string[];
-  custom_preferences: string;
+  therapeutic_areas: string[];
+  news_preferences: string;
 }
 
 /**

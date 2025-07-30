@@ -22,7 +22,7 @@ export const usersApi = {
    */
   updateUser: async (userData: UserUpdatePayload): Promise<ApiResponse<UserProfile>> => {
     return httpClient<UserProfile>('/users/aboutme', {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(userData),
     });
   },

@@ -46,13 +46,11 @@ class OrganizationService:
             await self.db.rollback()
             raise HTTPException(status_code=500, detail="Failed to create organization")
 
-    async def get_organizations(self, skip: int = 0, limit: int = 100) -> List[Organization]:
-        """Get list of organizations with pagination"""
+    async def get_organizations(self) -> List[Organization]:
+        """Get all organizations"""
         try:
             result = await self.db.execute(
                 select(Organization)
-                .offset(skip)
-                .limit(limit)
                 .order_by(Organization.name)
             )
             return result.scalars().all()
