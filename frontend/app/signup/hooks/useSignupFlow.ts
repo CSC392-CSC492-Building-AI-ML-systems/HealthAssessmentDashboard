@@ -102,8 +102,8 @@ export const useSignupFlow = () => {
 
     try {
       const prefsResult = await usersApi.saveUserPreferences({
-        selected_therapeutic_areas: preferences.selected || [],
-        custom_preferences: preferences.custom?.trim() || '',
+        therapeutic_areas: preferences.selected || [],
+        news_preferences: preferences.custom?.trim() || '',
       });
 
       if (!prefsResult.data) {
