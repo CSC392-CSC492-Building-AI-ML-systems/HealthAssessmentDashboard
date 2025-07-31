@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.sqlite import init_db as sqlite_init
 from app.routers import users, auth, chatbot, organizations
+from app.core.config import settings
 import app.models
 
 @asynccontextmanager
@@ -10,12 +11,12 @@ async def lifespan(app: FastAPI):
     await sqlite_init()
     yield
 
-app = FastAPI(title="OurPATHS API", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, lifespan=lifespan, debug=settings.debug)
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.db.sqlite import get_db
 from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import AuthService
+from app.core.config import settings
 from fastapi import Cookie
 
 router = APIRouter()
@@ -13,11 +14,40 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Cookie settings
 REFRESH_TOKEN_KEY = "refresh_token"
-COOKIE_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
+COOKIE_MAX_AGE = settings.jwt_refresh_token_expire_days * 24 * 60 * 60  # Convert days to seconds
 
 # Helper function to get auth service
 async def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     return AuthService(db)
+
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+    """Helper function to set authentication cookies"""
+    response.set_cookie(
+        key=REFRESH_TOKEN_KEY,
+        value=refresh_token,
+        httponly=settings.cookie_httponly,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        max_age=COOKIE_MAX_AGE,
+        path="/auth/refresh"
+    )
+
+def clear_auth_cookies(response: Response) -> None:
+    """Helper function to clear authentication cookies"""
+    response.delete_cookie(
+        key=REFRESH_TOKEN_KEY,
+        path="/auth/refresh"
+    )
+
+def serialize_user_data(user) -> dict:
+    """Helper function to serialize user data for response"""
+    return {
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "organization_id": user.organization_id
+    }
 
 @router.post("/signup", response_model=dict)
 async def signup(
@@ -27,25 +57,18 @@ async def signup(
     """Register a new user and return access and refresh tokens."""
     user = await auth_service.create_user(user_data)
     
-    access_token = auth_service.create_access_token(user.id)
-    refresh_token = auth_service.create_refresh_token(user.id)
+    # Create token pair
+    tokens = auth_service.create_token_pair(user.id)
     
     response = JSONResponse(
         content={
-            "access_token": access_token,
-            "token_type": "bearer"
+            "access_token": tokens.access_token,
+            "token_type": "bearer",
+            "user": serialize_user_data(user)
         }
     )
-    response.set_cookie(
-        key=REFRESH_TOKEN_KEY,
-        value=refresh_token,
-        httponly=True,
-        secure=True,  # for HTTPS only
-        samesite="strict",  # CSRF protection
-        max_age=COOKIE_MAX_AGE,
-        path="/auth/refresh"  # Only sent to refresh endpoint
-    )
     
+    set_auth_cookies(response, tokens.access_token, tokens.refresh_token)
     return response
 
 
@@ -64,23 +87,16 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token = auth_service.create_access_token(user.id)
-    refresh_token = auth_service.create_refresh_token(user.id)
+    # Create token pair
+    tokens = auth_service.create_token_pair(user.id)
     
     # Set refresh token as httpOnly cookie
-    response.set_cookie(
-        key=REFRESH_TOKEN_KEY,
-        value=refresh_token,
-        httponly=True,
-        secure=True,  # for HTTPS only
-        samesite="strict",  # CSRF protection
-        max_age=COOKIE_MAX_AGE,
-        path="/auth/refresh"  # Only sent to refresh endpoint
-    )
+    set_auth_cookies(response, tokens.access_token, tokens.refresh_token)
     
     return {
-        "access_token": access_token,
-        "token_type": "bearer"
+        "access_token": tokens.access_token,
+        "token_type": "bearer",
+        "user": serialize_user_data(user)
     }
 
 @router.post("/refresh")
@@ -98,37 +114,25 @@ async def refresh_token(
 
     user_id = auth_service.verify_token(refresh_token, "refresh")
     if not user_id:
-        response.delete_cookie(REFRESH_TOKEN_KEY)
+        clear_auth_cookies(response)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
         )
     
-    # Generate new tokens
-    access_token = auth_service.create_access_token(user_id)
-    new_refresh_token = auth_service.create_refresh_token(user_id)
+    # Generate new token pair
+    tokens = auth_service.create_token_pair(user_id)
     
-    # Update refresh token cookie
-    response.set_cookie(
-        key=REFRESH_TOKEN_KEY,
-        value=new_refresh_token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        max_age=COOKIE_MAX_AGE,
-        path="/auth/refresh"
-    )
+    # Update cookies
+    set_auth_cookies(response, tokens.access_token, tokens.refresh_token)
     
     return {
-        "access_token": access_token,
+        "access_token": tokens.access_token,
         "token_type": "bearer"
     }
 
 @router.post("/logout")
 async def logout(response: Response):
     """Clear the refresh token cookie."""
-    response.delete_cookie(
-        key=REFRESH_TOKEN_KEY,
-        path="/auth/refresh"
-    )
+    clear_auth_cookies(response)
     return {"message": "Successfully logged out"}

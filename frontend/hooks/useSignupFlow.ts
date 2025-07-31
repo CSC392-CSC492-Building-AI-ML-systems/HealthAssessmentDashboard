@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/general/ToastProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { authApi, organizationsApi, usersApi } from '@/lib/api';
-import { extractErrorInfo, isSuccessResponse } from '../utils/errorHandling';
-import type { ExistingOrganization, NewOrganization, UserPreferences } from '../types';
+import { extractErrorInfo, isSuccessResponse } from '../app/signup/utils/errorHandling';
+import type { ExistingOrganization, NewOrganization, UserPreferences } from '../app/signup/types';
 
 
 type OrganizationType = ExistingOrganization | NewOrganization;
@@ -14,40 +15,37 @@ type OrganizationType = ExistingOrganization | NewOrganization;
 export const useSignupFlow = () => {
   const router = useRouter();
   const { showError: showToastError, showInfo, showWarning } = useToast();
+  const { signup: authSignup, refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const isNewOrganization = (org: OrganizationType): org is NewOrganization => {
     return 'province' in org && 'description' in org;
   };
 
-  // Use account creation
+  // User account creation (cookies are set automatically by server)
   const createUserAccount = async (
     email: string,
     firstName: string,
     lastName: string,
-    password: string
+    password: string,
+    organizationId?: number
   ) => {
-    const userPayload = {
+    const userData = {
       email: email.trim(),
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       password: password,
-      organization_id: null,
+      organization_id: organizationId,
     };
     
-    const signupResponse = await authApi.signup(userPayload);
-
-    if (!isSuccessResponse(signupResponse)) {
-      const errorMessage = signupResponse.error || `Signup failed with status ${signupResponse.status}`;
-      throw new Error(errorMessage);
+    const success = await authSignup(userData);
+    
+    if (!success) {
+      throw new Error('Signup failed. Please try again.');
     }
-
-    if (signupResponse.data?.access_token) {
-      localStorage.setItem('access_token', signupResponse.data.access_token);
-      return signupResponse.data;
-    } else {
-      throw new Error('Invalid response: missing access token');
-    }
+    
+    // Refresh user data
+    await refreshUser();
   };
 
   // Organization creation/selection
@@ -102,8 +100,8 @@ export const useSignupFlow = () => {
 
     try {
       const prefsResult = await usersApi.saveUserPreferences({
-        selected_therapeutic_areas: preferences.selected || [],
-        custom_preferences: preferences.custom?.trim() || '',
+        therapeutic_areas: preferences.selected || [],
+        news_preferences: preferences.custom?.trim() || '',
       });
 
       if (!prefsResult.data) {
@@ -146,8 +144,11 @@ export const useSignupFlow = () => {
     setIsLoading(true);
 
     try {
-      await createUserAccount(email, firstName, lastName, password);
+      // Organization creation/selection
       const organizationId = await handleOrganization(organization);
+      
+      // User account creation with organization ID
+      await createUserAccount(email, firstName, lastName, password, organizationId || undefined);
 
       if (preferences) {
         await saveUserPreferences(preferences);
@@ -165,7 +166,6 @@ export const useSignupFlow = () => {
     } catch (error) {
       const { message, title } = extractErrorInfo(error);
       showToastError(message, title);
-      localStorage.removeItem('access_token');
     } finally {
       setIsLoading(false);
     }

@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Tuple
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status, Depends, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from dataclasses import dataclass
 
 from app.models.user import User
 from app.schemas.user import UserCreate
@@ -18,87 +19,129 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Configure JWT
 SECRET_KEY = settings.jwt_secret_key
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes
+REFRESH_TOKEN_EXPIRE_DAYS = settings.jwt_refresh_token_expire_days
+
+@dataclass
+class TokenConfig:
+    """Configuration for token creation"""
+    access_token_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES
+    refresh_token_days: int = REFRESH_TOKEN_EXPIRE_DAYS
+    algorithm: str = ALGORITHM
+    secret_key: str = SECRET_KEY
+
+@dataclass
+class TokenPair:
+    """Pair of access and refresh tokens"""
+    access_token: str
+    refresh_token: str
 
 class AuthService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, config: Optional[TokenConfig] = None):
         self._db = db
+        self._config = config or TokenConfig()
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+        """Verify a plain password against its hash"""
         return pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str) -> str:
+        """Generate password hash"""
         return pwd_context.hash(password)
 
     async def authenticate_user(self, email: str, password: str) -> Optional[User]:
-        result = await self._db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
-        
-        # User doesn't exist
-        if not user:
+        """Authenticate user with email and password"""
+        try:
+            result = await self._db.execute(select(User).where(User.email == email))
+            user = result.scalar_one_or_none()
+            
+            # User doesn't exist
+            if not user:
+                return None
+            # Incorrect password
+            if not self.verify_password(password, user.password_hash):
+                return None
+            return user
+        except Exception as e:
+            # Log the error in production
             return None
-        # Incorrect password
-        if not self.verify_password(password, user.password_hash):
-            return None
-        return user
 
     def create_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
+        """Create a JWT token with given data and expiration"""
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        encoded_jwt = jwt.encode(to_encode, self._config.secret_key, algorithm=self._config.algorithm)
         return encoded_jwt
 
     def create_access_token(self, user_id: int) -> str:
+        """Create an access token for the user"""
         return self.create_token(
             {"sub": str(user_id), "type": "access"},
-            timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            timedelta(minutes=self._config.access_token_minutes)
         )
 
     def create_refresh_token(self, user_id: int) -> str:
+        """Create a refresh token for the user"""
         return self.create_token(
             {"sub": str(user_id), "type": "refresh"},
-            timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+            timedelta(days=self._config.refresh_token_days)
         )
+
+    def create_token_pair(self, user_id: int) -> TokenPair:
+        """Create both access and refresh tokens for a user"""
+        access_token = self.create_access_token(user_id)
+        refresh_token = self.create_refresh_token(user_id)
+        return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
     async def create_user(self, user_data: UserCreate) -> User:
-        # Check if user already exists
-        result = await self._db.execute(select(User).where(User.email == user_data.email))
-        if result.scalar_one_or_none():
+        """Create a new user account"""
+        try:
+            # Check if user already exists
+            result = await self._db.execute(select(User).where(User.email == user_data.email))
+            if result.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered"
+                )
+
+            # Create user
+            hashed_password = self.get_password_hash(user_data.password)
+            db_user = User(
+                email=user_data.email,
+                first_name=user_data.first_name,
+                last_name=user_data.last_name,
+                password_hash=hashed_password,
+                organization_id=user_data.organization_id
+            )
+            
+            self._db.add(db_user)
+            await self._db.commit()
+            await self._db.refresh(db_user)
+            
+            return db_user
+        except HTTPException:
+            raise
+        except Exception as e:
+            await self._db.rollback()
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create user"
             )
 
-        # Create user
-        hashed_password = self.get_password_hash(user_data.password)
-        db_user = User(
-            email=user_data.email,
-            first_name=user_data.first_name,
-            last_name=user_data.last_name,
-            password_hash=hashed_password,
-            organization_id=user_data.organization_id
-        )
-        
-        self._db.add(db_user)
-        await self._db.commit()
-        await self._db.refresh(db_user)
-        
-        return db_user
-
     def verify_token(self, token: str, token_type: str) -> Optional[int]:
+        """Verify a JWT token and return user ID if valid"""
         try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, self._config.secret_key, algorithms=[self._config.algorithm])
             if payload.get("type") != token_type:
                 return None
             user_id = int(payload.get("sub"))
             return user_id
-        except JWTError:
+        except (JWTError, ValueError, TypeError):
             return None
 
 
@@ -120,14 +163,21 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    
-    if not user:
+    try:
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        return user
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail="Authentication failed",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    return user
