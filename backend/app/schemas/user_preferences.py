@@ -4,15 +4,9 @@ from typing import Optional, List
 class UserPreferencesBase(BaseModel):
     news_preferences: Optional[str] = None
     therapeutic_areas: Optional[List[str]] = None
-    custom_preferences: Optional[str] = None
 
 class UserPreferencesCreate(UserPreferencesBase):
     pass
-
-class UserPreferencesUpdate(BaseModel):
-    news_preferences: Optional[str] = None
-    therapeutic_areas: Optional[List[str]] = None
-    custom_preferences: Optional[str] = None
 
 class UserPreferencesRead(UserPreferencesBase):
     id: int

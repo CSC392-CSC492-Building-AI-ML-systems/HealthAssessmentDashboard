@@ -8,6 +8,7 @@ from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import AuthService
 from app.core.config import settings
 from fastapi import Cookie
+from app.core.config import settings
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

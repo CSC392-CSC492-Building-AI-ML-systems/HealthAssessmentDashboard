@@ -8,7 +8,7 @@ from app.models.user import User
 from app.models.user_preferences import UserPreferences
 from app.models.organization import Organization
 from app.schemas.user import UserUpdate
-from app.schemas.user_preferences import UserPreferencesCreate, UserPreferencesUpdate
+from app.schemas.user_preferences import UserPreferencesCreate
 
 
 class UserService:
@@ -125,48 +125,3 @@ class UserService:
         except Exception as e:
             await self.db.rollback()
             raise HTTPException(status_code=500, detail="Failed to save user preferences")
-
-    async def update_user_preferences(self, user_id: int, preferences_update: UserPreferencesUpdate) -> UserPreferences:
-        """Update user preferences"""
-        try:
-            result = await self.db.execute(
-                select(UserPreferences).where(UserPreferences.user_id == user_id)
-            )
-            db_preferences = result.scalar_one_or_none()
-            
-            if not db_preferences:
-                # Create preferences if they don't exist
-                db_preferences = UserPreferences(user_id=user_id)
-                self.db.add(db_preferences)
-            
-            # Update only provided fields
-            update_data = preferences_update.model_dump(exclude_unset=True)
-            for field, value in update_data.items():
-                setattr(db_preferences, field, value)
-            
-            await self.db.commit()
-            await self.db.refresh(db_preferences)
-            return db_preferences
-        except Exception as e:
-            await self.db.rollback()
-            raise HTTPException(status_code=500, detail="Failed to update user preferences")
-
-    async def create_user(self, name: str, email: str) -> User:
-        """Create a new user (legacy endpoint)"""
-        try:
-            user = User(name=name, email=email)
-            self.db.add(user)
-            await self.db.commit()
-            await self.db.refresh(user)
-            return user
-        except Exception as e:
-            await self.db.rollback()
-            raise HTTPException(status_code=500, detail="Failed to create user")
-
-    async def list_users(self) -> list[User]:
-        """List all users (legacy endpoint)"""
-        try:
-            result = await self.db.execute(select(User))
-            return result.scalars().all()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail="Failed to fetch users")

@@ -5,7 +5,7 @@ from typing import Optional
 from app.models.user import User
 from app.db.sqlite import get_db
 from app.schemas.user import UserRead, UserUpdate
-from app.schemas.user_preferences import UserPreferencesCreate, UserPreferencesRead, UserPreferencesUpdate
+from app.schemas.user_preferences import UserPreferencesCreate, UserPreferencesRead
 from app.services.auth_service import get_current_user
 from app.services.user_service import UserService
 
@@ -25,7 +25,7 @@ async def get_current_user_profile(
     return await user_service.get_user_profile(current_user.id)
 
 # Update current user profile
-@router.patch("/aboutme", response_model=UserRead)
+@router.put("/aboutme", response_model=UserRead)
 async def update_current_user(
     user_update: UserUpdate,
     current_user: User = Depends(get_current_user),
@@ -52,26 +52,3 @@ async def create_or_update_user_preferences(
 ):
     """Create or update the current user's preferences"""
     return await user_service.create_or_update_preferences(current_user.id, preferences)
-
-# Update user preferences
-@router.patch("/preferences", response_model=UserPreferencesRead)
-async def update_user_preferences(
-    preferences_update: UserPreferencesUpdate,
-    current_user: User = Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service)
-):
-    """Update the current user's preferences"""
-    return await user_service.update_user_preferences(current_user.id, preferences_update)
-
-# Legacy endpoints for compatibility
-@router.post("/")
-async def create_user(
-    name: str,
-    email: str,
-    user_service: UserService = Depends(get_user_service)
-):
-    return await user_service.create_user(name, email)
-
-@router.get("/")
-async def list_users(user_service: UserService = Depends(get_user_service)):
-    return await user_service.list_users()

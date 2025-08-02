@@ -10,7 +10,6 @@ from dataclasses import dataclass
 
 from app.models.user import User
 from app.schemas.user import UserCreate
-from app.schemas.user_preferences import UserPreferencesCreate
 from app.core.config import settings
 from app.db.sqlite import get_db
 
@@ -91,6 +90,12 @@ class AuthService:
             {"sub": str(user_id), "type": "refresh"},
             timedelta(days=self._config.refresh_token_days)
         )
+
+    def create_token_pair(self, user_id: int) -> TokenPair:
+        """Create both access and refresh tokens for a user"""
+        access_token = self.create_access_token(user_id)
+        refresh_token = self.create_refresh_token(user_id)
+        return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
     def create_token_pair(self, user_id: int) -> TokenPair:
         """Create both access and refresh tokens for a user"""

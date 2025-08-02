@@ -25,12 +25,10 @@ async def create_organization(
 
 @router.get("/", response_model=List[OrganizationRead])
 async def get_organizations(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
     organization_service: OrganizationService = Depends(get_organization_service)
 ):
-    """Get list of organizations with pagination"""
-    return await organization_service.get_organizations(skip=skip, limit=limit)
+    """Get all organizations"""
+    return await organization_service.get_organizations()
 
 @router.get("/search", response_model=List[OrganizationRead])
 async def search_organizations(

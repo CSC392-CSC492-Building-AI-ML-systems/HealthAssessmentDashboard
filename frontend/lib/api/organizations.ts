@@ -51,7 +51,7 @@ export const organizationsApi = {
     data: UpdateOrganizationPayload
   ): Promise<ApiResponse<Organization>> => {
     return httpClient<Organization>(`/organizations/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   },
