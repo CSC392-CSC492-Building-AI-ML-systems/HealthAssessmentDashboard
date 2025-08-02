@@ -1,0 +1,45 @@
+name: Backend Tests
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'tests/backend/**'
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate .env for CI
+        run: |
+          SECRET=$(openssl rand -hex 32)
+          cat <<EOF > .env
+          APP_NAME="OurPATHS API"
+          SQLITE_PATH="sqlite+aiosqlite:///./ci.db"
+          JWT_SECRET_KEY=$SECRET
+          EOF
+
+      - name: Create empty SQLite file
+        run: |
+          python - <<PYCODE
+          import sqlite3
+          sqlite3.connect("ci.db").close()
+          PYCODE
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: pytest tests/backend

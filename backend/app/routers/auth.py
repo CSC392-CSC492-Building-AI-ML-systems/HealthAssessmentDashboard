@@ -7,6 +7,7 @@ from app.db.sqlite import get_db
 from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import AuthService
 from fastapi import Cookie
+from app.core.config import settings
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -40,7 +41,7 @@ async def signup(
         key=REFRESH_TOKEN_KEY,
         value=refresh_token,
         httponly=True,
-        secure=True,  # for HTTPS only
+        secure=settings.COOKIE_SECURE,
         samesite="strict",  # CSRF protection
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"  # Only sent to refresh endpoint
@@ -72,7 +73,7 @@ async def login(
         key=REFRESH_TOKEN_KEY,
         value=refresh_token,
         httponly=True,
-        secure=True,  # for HTTPS only
+        secure=settings.COOKIE_SECURE,
         samesite="strict",  # CSRF protection
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"  # Only sent to refresh endpoint
@@ -113,7 +114,7 @@ async def refresh_token(
         key=REFRESH_TOKEN_KEY,
         value=new_refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite="strict",
         max_age=COOKIE_MAX_AGE,
         path="/auth/refresh"
