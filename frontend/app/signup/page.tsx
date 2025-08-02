@@ -1,23 +1,31 @@
 "use client";
 
 import React from "react";
-import AuthPage from "@/components/auth/AuthPage"
+import AuthPage from "@/components/auth/AuthPage";
+import { useSignupFlow } from "./hooks/useSignupFlow";
+import type { OrganizationType, UserPreferences } from "./types";
 
 const Signup: React.FC = () => {
-    const handleSignup = (
+    const { isLoading, handleSignup } = useSignupFlow();
+
+    const onSignup = async (
         email: string,
+        firstName: string,
+        lastName: string,
         password: string,
-        organization:
-            | { name: string }
-            | { name: string; province: string; description: string },
-        preferences?: { selected: string[]; custom: string }
+        organization: OrganizationType,
+        preferences?: UserPreferences
     ) => {
-        console.log("LOGIC HERE");
+        await handleSignup(email, firstName, lastName, password, organization, preferences);
     };
 
     return (
-        <AuthPage mode={"signup"} onSignup={handleSignup} />
+        <AuthPage 
+            mode="signup" 
+            onSignup={onSignup}
+            isLoading={isLoading}
+        />
     );
-}
+};
 
 export default Signup;

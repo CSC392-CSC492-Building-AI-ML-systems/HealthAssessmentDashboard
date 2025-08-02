@@ -1,15 +1,28 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { MagicCard } from "@/components/general/magicui/MagicCard";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
+import { organizationsApi } from "@/lib/api";
+import { validateEmail, validateOrganization, validateName, validatePassword } from "@/app/signup/utils/validation";
 
 type AuthMode = "login" | "signup";
+
+interface Organization {
+    id: number;
+    name: string;
+    province: string;
+    description?: string;
+    location?: string;
+}
 
 interface AuthFormProps {
     mode: AuthMode;
     onSignup?: (
         email: string,
+        firstName: string,
+        lastName: string,
         password: string,
         organization:
             | { name: string }
@@ -20,13 +33,16 @@ interface AuthFormProps {
         email: string,
         password: string
     ) => void;
+    isLoading?: boolean;
 }
 
 
-const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
+const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading = false }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
 
     // SIGNUP STEP
     const [step, setStep] = useState(1);
@@ -40,6 +56,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         email?: string;
         password?: string;
         confirmPassword?: string;
+        firstName?: string;
+        lastName?: string;
         newOrgName?: string;
         newOrgProvince?: string;
         newOrgDescription?: string;
@@ -51,8 +69,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
     const [customPreference, setCustomPreference] = useState("");
 
     // ORGANIZATION INFO TO ONBOARD
-    // Here, we should get the organizations list from the backend API call (DO THIS AS PART OF OUR-47)
-    const [organizations, setOrganizations] = useState<string[]>(["test"]);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
+    const [organizationsLoading, setOrganizationsLoading] = useState(false);
     const [useExistingOrg, setUseExistingOrg] = useState(true);
     const [selectedOrg, setSelectedOrg] = useState("");
     const [newOrg, setNewOrg] = useState({
@@ -60,6 +78,28 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         province: "",
         description: "",
     });
+
+    useEffect(() => {
+        if (mode === "signup") {
+            loadOrganizations();
+        }
+    }, [mode]);
+
+    const loadOrganizations = async () => {
+        setOrganizationsLoading(true);
+        try {
+            const result = await organizationsApi.getOrganizations();
+            if (result.data && Array.isArray(result.data)) {
+                setOrganizations(result.data);
+            } else {
+                setOrganizations([]);
+            }
+        } catch (error) {
+            setOrganizations([]);
+        } finally {
+            setOrganizationsLoading(false);
+        }
+    };
 
     const provinces = [
         "Alberta",
@@ -92,6 +132,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
             setEmail("");
             setPassword("");
             setConfirmPassword("");
+            setFirstName("");
+            setLastName("");
             setPreferences([]);
             setCustomPreference("");
             setSelectedOrg("");
@@ -108,19 +150,36 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
 
     const handleNextPage = (e: React.FormEvent) => {
         e.preventDefault();
-        const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
+        const newErrors: { 
+            email?: string; 
+            password?: string; 
+            confirmPassword?: string;
+            firstName?: string;
+            lastName?: string;
+        } = {};
 
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = "Please enter a valid email address.";
+        const emailValidation = validateEmail(email);
+        if (!emailValidation.isValid) {
+            newErrors.email = emailValidation.errors[0];
         }
 
-        if (password.length < 8) {
-            newErrors.password = "Password must be at least 8 characters long.";
-            newErrors.confirmPassword = "Password must be at least 8 characters long.";
+        const firstNameValidation = validateName(firstName, "First name");
+        if (!firstNameValidation.isValid) {
+            newErrors.firstName = firstNameValidation.errors[0];
         }
 
+        const lastNameValidation = validateName(lastName, "Last name");
+        if (!lastNameValidation.isValid) {
+            newErrors.lastName = lastNameValidation.errors[0];
+        }
+
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+            newErrors.password = passwordValidation.errors[0];
+        }
+
+        // Check password confirmation
         if (confirmPassword !== password) {
-            newErrors.password = "Passwords must match";
             newErrors.confirmPassword = "Passwords must match.";
         }
 
@@ -137,20 +196,30 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         const newErrors: { newOrgName?: string; newOrgProvince?: string; newOrgDescription?: string; existingOrg?: string } = {};
 
         if (!useExistingOrg) {
-            if (!newOrg.name) {
-                newErrors.newOrgName = "Please enter an organization name."
+            const organizationData = {
+                name: newOrg.name,
+                province: newOrg.province,
+                description: newOrg.description
+            };
+            
+            const orgValidation = validateOrganization(organizationData);
+            if (!orgValidation.isValid) {
+                orgValidation.errors.forEach(error => {
+                    if (error.includes('name')) {
+                        newErrors.newOrgName = error;
+                    } else if (error.includes('Province')) {
+                        newErrors.newOrgProvince = error;
+                    } else if (error.includes('Description')) {
+                        newErrors.newOrgDescription = error;
+                    }
+                });
             }
 
-            if (organizations.includes(newOrg.name)) {
-                newErrors.newOrgName = "Already existing organization name."
-            }
-
-            if (!newOrg.province) {
-                newErrors.newOrgProvince = "Please add a province."
-            }
-
-            if (!newOrg.description) {
-                newErrors.newOrgDescription = "Please describe the organization."
+            if (organizations.some(org => 
+                org.name.toLowerCase() === newOrg.name.toLowerCase() && 
+                org.province === newOrg.province
+            )) {
+                newErrors.newOrgName = `An organization named "${newOrg.name}" already exists in ${newOrg.province}.`;
             }
         } else {
             if (!selectedOrg) {
@@ -166,7 +235,9 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
             }
 
             onSignup(
-                email,
+                email.trim(),
+                firstName.trim(),
+                lastName.trim(),
                 password,
                 useExistingOrg
                     ? { name: selectedOrg }
@@ -189,22 +260,20 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
         e.preventDefault();
         const newErrors: { email?: string; password?: string; confirmPassword?: string; newOrgName?: string } = {};
 
-        if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = "Please enter a valid email address.";
+        const emailValidation = validateEmail(email);
+        if (!emailValidation.isValid) {
+            newErrors.email = emailValidation.errors[0];
         }
 
-        if (password.length < 8) {
+        if (!password || password.length < 8) {
             newErrors.password = "Password must be at least 8 characters long.";
-            newErrors.confirmPassword = "Password must be at least 8 characters long.";
         }
 
         setErrors(newErrors);
-
         if (Object.keys(newErrors).length === 0) {
             if (onLogin) {
                 onLogin(email, password);
             }
-
             resetAuthForm("login");
         }
     };
@@ -311,6 +380,50 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                     }}
                                                 />
                                                 {errors.email && <p className="text-red-500 mt-2 text-sm">{errors.email}</p>}
+                                            </div>
+
+                                            <div className="mb-[20px]">
+                                                <label htmlFor="firstName" className="block text-lg mb-2 font-semibold">
+                                                    First Name
+                                                </label>
+                                                <input
+                                                    id="firstName"
+                                                    placeholder="John"
+                                                    value={firstName}
+                                                    onChange={(e) => setFirstName(e.target.value)}
+                                                    className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.firstName
+                                                        ? "border-2 border-red-500 focus:ring-red-500"
+                                                        : "focus:ring-[var(--button-red)]"
+                                                        }`}
+                                                    style={{
+                                                        backgroundColor: "white",
+                                                        color: "var(--brand-dark)",
+                                                        fontFamily: "var(--font-body)",
+                                                    }}
+                                                />
+                                                {errors.firstName && <p className="text-red-500 mt-2 text-sm">{errors.firstName}</p>}
+                                            </div>
+
+                                            <div className="mb-[20px]">
+                                                <label htmlFor="lastName" className="block text-lg mb-2 font-semibold">
+                                                    Last Name
+                                                </label>
+                                                <input
+                                                    id="lastName"
+                                                    placeholder="Doe"
+                                                    value={lastName}
+                                                    onChange={(e) => setLastName(e.target.value)}
+                                                    className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.lastName
+                                                        ? "border-2 border-red-500 focus:ring-red-500"
+                                                        : "focus:ring-[var(--button-red)]"
+                                                        }`}
+                                                    style={{
+                                                        backgroundColor: "white",
+                                                        color: "var(--brand-dark)",
+                                                        fontFamily: "var(--font-body)",
+                                                    }}
+                                                />
+                                                {errors.lastName && <p className="text-red-500 mt-2 text-sm">{errors.lastName}</p>}
                                             </div>
 
                                             <div className="mb-6">
@@ -468,11 +581,17 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                                             }}
                                                         >
                                                             <option value="">-- Select a registered organization --</option>
-                                                            {organizations.map((org) => (
-                                                                <option key={org} value={org}>
-                                                                    {org}
-                                                                </option>
-                                                            ))}
+                                                            {organizationsLoading ? (
+                                                                <option disabled>Loading organizations...</option>
+                                                            ) : organizations.length === 0 ? (
+                                                                <option disabled>No organizations available</option>
+                                                            ) : (
+                                                                organizations.map((org) => (
+                                                                    <option key={org.id} value={org.name}>
+                                                                        {org.name} ({org.province})
+                                                                    </option>
+                                                                ))
+                                                            )}
 
                                                         </select>
                                                         {errors.existingOrg && (
@@ -575,9 +694,23 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                                         ) : (
                                             <button
                                                 type="submit"
-                                                className="w-full bg-[var(--button-onhover-red)] py-2 rounded text-white font-semibold duration-300 cursor-pointer hover:bg-[var(--button-red)] hover:shadow-xl transition"
+                                                disabled={isLoading}
+                                                className={`
+                                                    w-full py-2 rounded text-white font-semibold duration-300 transition
+                                                    ${isLoading 
+                                                        ? "bg-gray-400 cursor-not-allowed" 
+                                                        : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
+                                                    }
+                                                `}
                                             >
-                                                Sign Up
+                                                {isLoading ? (
+                                                    <span className="flex items-center justify-center gap-2">
+                                                        <LoadingSpinner size="sm" />
+                                                        Creating Account...
+                                                    </span>
+                                                ) : (
+                                                    "Sign Up"
+                                                )}
                                             </button>
                                         )}
                                     </div>
@@ -588,9 +721,23 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin }) => {
                             {mode === "login" && (
                                 <button
                                     type="submit"
-                                    className="w-full bg-[var(--button-onhover-red)] py-2 rounded text-white font-semibold duration-300 cursor-pointer hover:bg-[var(--button-red)] hover:shadow-xl transition"
+                                    disabled={isLoading}
+                                    className={`
+                                        w-full py-2 rounded text-white font-semibold duration-300 transition
+                                        ${isLoading 
+                                            ? "bg-gray-400 cursor-not-allowed" 
+                                            : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
+                                        }
+                                    `}
                                 >
-                                    {mode === "login" ? "Login" : "Sign Up"}
+                                    {isLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <LoadingSpinner size="sm" />
+                                            Logging in...
+                                        </span>
+                                    ) : (
+                                        "Login"
+                                    )}
                                 </button>
                             )}
                         </form>

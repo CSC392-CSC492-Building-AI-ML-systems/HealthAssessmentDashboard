@@ -5,11 +5,13 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends, Cookie
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.core.config import settings
+from app.db.sqlite import get_db
 
 # Configure password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -102,3 +104,34 @@ class AuthService:
             return user_id
         except JWTError:
             return None
+
+
+# Dependency to get the current user from JWT token
+security = HTTPBearer()
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """Get current user from JWT token"""
+    auth_service = AuthService(db)
+    user_id = auth_service.verify_token(credentials.credentials, "access")
+    
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    return user
