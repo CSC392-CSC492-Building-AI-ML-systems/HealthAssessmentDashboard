@@ -23,6 +23,7 @@ body {
   --hover-bg: #CCC9DC; 
   --hover-box: #CCC9DC;
   --button-onhover-red: #5A0C13;
+  --button-clr:#e9e9ee;
   --gradient-color: #FFFFFF;
   --input-bg: #ffffff;
   --input-text: #0c1821;
@@ -45,6 +46,7 @@ body {
   --text-light: #e9e9ee;
   --text-onhover-red: #B8333C;
   --button-onhover-red: #5A0C13;
+  --button-clr:#e9e9ee;
   --hover-bg: #324A5F; 
   --hover-box: #19293b;
   --gradient-color: #262626;
@@ -53,7 +55,7 @@ body {
   --main-body: #121e2b;
   --headerfooter: #0C1821;
   --bars:#0C1821;
-    --feature-bg: #EDEDED;
+  --feature-bg: #EDEDED;
 
 }
 

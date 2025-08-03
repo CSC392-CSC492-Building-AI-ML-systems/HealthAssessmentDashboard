@@ -12,7 +12,7 @@ const LoginButton = () => {
     <div className="flex justify-center">
       <button
         onClick={handleGetStarted}
-        className="bg-[var(--button-red)] text-[var(--feature-bg)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+        className="bg-[var(--button-red)] text-[var(--button-clr)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:shadow-xl"
       >
         Create an Account
       </button>
