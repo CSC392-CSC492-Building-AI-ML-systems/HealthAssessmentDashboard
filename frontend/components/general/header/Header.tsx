@@ -6,8 +6,9 @@ import Link from 'next/link';
 import React, { useEffect, useState } from "react";
 import Toggle from "../theme/Toggle";
 import Login from "../LoginButton";
+import Topbar from "@/components/chatbot/Topbar";
 
-type HeaderMode = "full" | "logo-only";
+type HeaderMode = "full" | "logo-only" | "chatbot";
 
 interface HeaderProps {
     mode?: HeaderMode;
@@ -20,6 +21,12 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
         theme === "dark"
             ? "/ourpaths-light.png"
             : "/ourpaths-dark.png";
+
+    // Use Topbar directly if in chatbot
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    if (mode === "chatbot") {
+        return <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+    }
 
     return (
         <nav className="bg-[var(--headerfooter)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">

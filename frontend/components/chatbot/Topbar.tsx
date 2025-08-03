@@ -44,17 +44,6 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
 
             {/* Theme Toggle */}        
             <Toggle />
-            
-            {/* <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-full w-10 h-5 flex items-center bg-gray-400 dark:bg-gray-700 px-1"
-            >
-            <div
-                className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                theme === "light" ? "" : "translate-x-5"
-                }`}
-            />
-            </button> */}
 
         </div>
         </header>
