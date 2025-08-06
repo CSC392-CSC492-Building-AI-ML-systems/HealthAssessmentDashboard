@@ -8,7 +8,6 @@ from app.rag_pipeline.intent_classifier.intent_classifier import intent_classifi
 from typing import List, Dict, Any
 from app.models.enums import IntentEnum
 from app.services.agent_tools import (
-    cda_retriever,
     user_retriever,
     price_rec_service,
     timeline_rec_service,
@@ -152,8 +151,7 @@ class ChatbotService:
 
             1. Use the intent classifier to detect which tools are required.
             2. For each intent, invoke the matching tool in the correct order.
-               • USER_VECTORDB and/or CDA_VECTORDB are retrievers returning
-                 metadata (list of dictionaries).
+               • VECTORDB is a retriever returning metadata (list of dictionaries).
                • PRICE_REC_SERVICE is an ML service that depends on metadata
                  returned from a retriever; therefore it is executed after
                  the relevant retriever to build its input.
@@ -175,29 +173,23 @@ class ChatbotService:
 
         # 2) Establish order of execution of the tools
         ordered_intents = [
-            IntentEnum.USER_VECTORDB,
-            IntentEnum.CDA_VECTORDB,
+            IntentEnum.VECTORDB,
             IntentEnum.PRICE_REC_SERVICE,
             IntentEnum.TIMELINE_REC_SERVICE,
         ]
         execution_plan = [i for i in ordered_intents if i in intents]
 
         responses: List[Dict[str, Any]] = []
-        user_metadata: List[Dict[str, Any]] | None = None
-        cda_metadata: List[Dict[str, Any]] | None = None
+        metadata: List[Dict[str, Any]] | None = None
 
         for intent in execution_plan:
-            if intent == IntentEnum.USER_VECTORDB:
-                user_metadata = user_retriever.query(query)
-                responses.append({"intent": intent, "response": user_metadata})
-
-            elif intent == IntentEnum.CDA_VECTORDB:
-                cda_metadata = cda_retriever.query(query)
-                responses.append({"intent": intent, "response": cda_metadata})
+            if intent == IntentEnum.VECTORDB:
+                metadata = user_retriever.query(query)
+                responses.append({"intent": intent, "response": metadata})
 
             elif intent == IntentEnum.PRICE_REC_SERVICE:
-                # Metadata from the USER vector-DB; fall back to CDA if USER is not available
-                meta_data = user_metadata or cda_metadata or {}
+                # Metadata from the USER vector-DB
+                meta_data = metadata or {}
                 # TODO: Structure the metadata into the structure expected by the ML model.
                 prediction = price_rec_service.predict({"metadata": meta_data})
                 responses.append({"intent": intent, "response": prediction})
