@@ -41,14 +41,17 @@ class AuthService:
         self._db = db
         self._config = config or TokenConfig()
 
+    # Verify a user's password
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a plain password against its hash"""
         return pwd_context.verify(plain_password, hashed_password)
 
+    # Generate a password hash
     def get_password_hash(self, password: str) -> str:
         """Generate password hash"""
         return pwd_context.hash(password)
 
+    # Authenticate user with email and password
     async def authenticate_user(self, email: str, password: str) -> Optional[User]:
         """Authenticate user with email and password"""
         try:
@@ -63,9 +66,9 @@ class AuthService:
                 return None
             return user
         except Exception as e:
-            # Log the error in production
             return None
 
+    # Create JWT tokens
     def create_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         """Create a JWT token with given data and expiration"""
         to_encode = data.copy()
@@ -77,6 +80,7 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, self._config.secret_key, algorithm=self._config.algorithm)
         return encoded_jwt
 
+    # Create access token
     def create_access_token(self, user_id: int) -> str:
         """Create an access token for the user"""
         return self.create_token(
@@ -84,6 +88,7 @@ class AuthService:
             timedelta(minutes=self._config.access_token_minutes)
         )
 
+    # Create refresh token
     def create_refresh_token(self, user_id: int) -> str:
         """Create a refresh token for the user"""
         return self.create_token(
@@ -91,18 +96,14 @@ class AuthService:
             timedelta(days=self._config.refresh_token_days)
         )
 
+    # Create both access and refresh tokens
     def create_token_pair(self, user_id: int) -> TokenPair:
         """Create both access and refresh tokens for a user"""
         access_token = self.create_access_token(user_id)
         refresh_token = self.create_refresh_token(user_id)
         return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
-    def create_token_pair(self, user_id: int) -> TokenPair:
-        """Create both access and refresh tokens for a user"""
-        access_token = self.create_access_token(user_id)
-        refresh_token = self.create_refresh_token(user_id)
-        return TokenPair(access_token=access_token, refresh_token=refresh_token)
-
+    # Create a new user account
     async def create_user(self, user_data: UserCreate) -> User:
         """Create a new user account"""
         try:
@@ -138,6 +139,7 @@ class AuthService:
                 detail="Failed to create user"
             )
 
+    # Verify JWT token and return user ID
     def verify_token(self, token: str, token_type: str) -> Optional[int]:
         """Verify a JWT token and return user ID if valid"""
         try:
@@ -153,6 +155,7 @@ class AuthService:
 # Dependency to get the current user from JWT token
 security = HTTPBearer()
 
+# Get current user from JWT token
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db)

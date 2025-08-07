@@ -16,7 +16,7 @@ export const organizationsApi = {
   createOrganization: async (
     orgData: CreateOrganizationPayload
   ): Promise<ApiResponse<Organization>> => {
-    return httpClient<Organization>('/organizations', {
+    return httpClient<Organization>('/organizations/', {
       method: 'POST',
       body: JSON.stringify(orgData),
     });
@@ -26,7 +26,7 @@ export const organizationsApi = {
    * Get all organizations
    */
   getOrganizations: async (): Promise<ApiResponse<Organization[]>> => {
-    return httpClient<Organization[]>('/organizations');
+    return httpClient<Organization[]>('/organizations/');
   },
 
   /**

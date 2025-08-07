@@ -167,7 +167,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    checkAuth();
+    // Skip auth check on public pages
+    const publicPages = ['/signup', '/login'];
+    const currentPath = window.location.pathname;
+    
+    if (!publicPages.includes(currentPath)) {
+      checkAuth();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const value: AuthContextType = {
