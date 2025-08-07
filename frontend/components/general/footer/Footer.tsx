@@ -15,7 +15,7 @@ const Footer: React.FC<FooterProps> = ({ mode = "full" }) => {
   }
 
   return (
-    <footer className="bg-[var(--background)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">
+    <footer className="bg-[var(--headerfooter)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">
       {/* Copyright on left */}
       <div className="flex space-x-3 px-5 text-sm">
         © Copyright OurPATHS 2025
