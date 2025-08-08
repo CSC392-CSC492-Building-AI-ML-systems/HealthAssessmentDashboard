@@ -1,52 +1,33 @@
 from typing import List
 import json, os
-from openai import OpenAI, OpenAIError
+from openai import OpenAI, OpenAIError  # keep if used elsewhere
 from dotenv import load_dotenv
 from app.models.enums import IntentEnum
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+import cohere
 
-_SYSTEM_PROMPT = (
-    "You are an intent classification assistant for a pharma chatbot. "
-    "Possible intents are: "
-    "\"VECTORDB\", \"PRICE_REC_SERVICE\", \"TIMELINE_REC_SERVICE\". "
-    "Return only a JSON array of one or more of those strings. "
-    "If none apply, return []. Do not add any other text."
-)
+load_dotenv()
+
+co = cohere.Client(os.getenv("COHERE_API_KEY"))
+_MODEL_ID = os.getenv("INTENT_CLASSIFIER_MODEL_ID")
 
 def intent_classifier(query: str) -> List[IntentEnum]:
-    """Classify the intent of a user query."""
     if not query or not query.strip():
         return []
-
-    msgs = [
-        {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": f"User query: {query}\nIntents:"},
-    ]
-
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=msgs,
-            temperature=0.0,
-            max_tokens=30,
+        # Classify the query using the intent classifier model
+        response = co.classify(
+            model=_MODEL_ID,
+            inputs=[query.strip()]
         )
-    except OpenAIError as e:
-        raise RuntimeError(f"OpenAI classify failed: {e}") from e
+    except Exception as e:
+        raise RuntimeError(f"Cohere classify failed: {e}") from e
 
-    # Get the response
-    raw = (resp.choices[0].message.content or "").strip()
+    # If no classifications are returned, return an empty list
+    if not response.classifications:
+        return []
 
-    # Parse the response
-    try:
-        intents = json.loads(raw)
-        if not isinstance(intents, list):
-            intents = [intents]
-    except json.JSONDecodeError:
-        intents = [raw]
-
+    # Get the top prediction from the response
+    top = response.classifications[0].prediction
     allowed = {e.value for e in IntentEnum}
-    cleaned = sorted({intent for intent in intents if isinstance(intent, str) and intent in allowed})
-
-    return [IntentEnum(intent) for intent in cleaned]
+    return [IntentEnum(top)] if isinstance(top, str) and top in allowed else []
