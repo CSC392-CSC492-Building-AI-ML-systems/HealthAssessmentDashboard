@@ -10,7 +10,7 @@ async def test_call_tools_execution_order(monkeypatch):
     # Arrange: force the intent classifier to return a specific intent list.
     monkeypatch.setattr(
         "app.services.chatbot_service.intent_classifier",
-        lambda q: [IntentEnum.USER_VECTORDB, IntentEnum.PRICE_REC_SERVICE],
+        lambda q: [IntentEnum.VECTORDB, IntentEnum.TIMELINE_REC_SERVICE, IntentEnum.PRICE_REC_SERVICE],
     )
 
     service = ChatbotService(db=MagicMock())
@@ -20,7 +20,8 @@ async def test_call_tools_execution_order(monkeypatch):
 
     # Assert the order and presence of responses
     assert [r["intent"] for r in responses] == [
-        IntentEnum.USER_VECTORDB,
+        IntentEnum.VECTORDB,
+        IntentEnum.TIMELINE_REC_SERVICE,
         IntentEnum.PRICE_REC_SERVICE,
     ]
 
