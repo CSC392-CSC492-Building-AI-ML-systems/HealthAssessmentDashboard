@@ -4,11 +4,11 @@ from app.models.chat_message import ChatMessage
 from app.models.chat_history import ChatHistory
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
-from app.rag_pipeline.intent_classifier.intent_classifier import intent_classifier
+from app.rag_tools.intent_classifier.intent_classifier import intent_classifier
 from typing import List, Dict, Any
 from app.models.enums import IntentEnum
 from app.services.agent_tools import (
-    user_retriever,
+    retriever_service,
     price_rec_service,
     timeline_rec_service,
 )
@@ -184,7 +184,7 @@ class ChatbotService:
 
         for intent in execution_plan:
             if intent == IntentEnum.VECTORDB:
-                metadata = user_retriever.query(query)
+                metadata = retriever_service.retrieve(query)
                 responses.append({"intent": intent, "response": metadata})
 
             elif intent == IntentEnum.PRICE_REC_SERVICE:
