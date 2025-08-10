@@ -7,29 +7,15 @@ import pytest
 from app.models.enums import IntentEnum
 
 
-def _make_stub_client(response_content: str):
-    """Create a stub OpenAI client that returns the given content."""
-
-    # Build a minimal response object that mirrors the structure we access in the real OpenAI response
+def _make_stub_client(top_prediction: str):
+    """Create a stub Cohere client that returns a classify() result."""
     response = types.SimpleNamespace(
-        choices=[
-            types.SimpleNamespace(
-                message=types.SimpleNamespace(content=response_content)
-            )
-        ]
+        classifications=[types.SimpleNamespace(prediction=top_prediction)]
     )
 
-    class _StubCompletions:
-        def create(self, *args, **kwargs):
-            return response
-
-    class _StubChat:
-        def __init__(self):
-            self.completions = _StubCompletions()
-
     class _StubClient:
-        def __init__(self):
-            self.chat = _StubChat()
+        def classify(self, *args, **kwargs):
+            return response
 
     return _StubClient()
 
@@ -37,7 +23,7 @@ def _make_stub_client(response_content: str):
 @pytest.fixture()
 def ic_module():
     """Return the intent_classifier module (imported fresh for each test)."""
-    return importlib.import_module("app.rag_pipeline.intent_classifier.intent_classifier")
+    return importlib.import_module("app.rag_tools.intent_classifier.intent_classifier")
 
 
 def test_empty_query_returns_empty_list(ic_module):
@@ -46,28 +32,21 @@ def test_empty_query_returns_empty_list(ic_module):
 
 
 @pytest.mark.parametrize(
-    "mock_response,expected",
+    "top_prediction,expected",
     [
-        ("[\"PRICE_REC_SERVICE\"]", {IntentEnum.PRICE_REC_SERVICE}),
-        (
-            "[\"PRICE_REC_SERVICE\", \"TIMELINE_REC_SERVICE\"]",
-            {IntentEnum.PRICE_REC_SERVICE, IntentEnum.TIMELINE_REC_SERVICE},
-        ),
-        (
-            "[\"PRICE_REC_SERVICE\", \"UNKNOWN\"]",  # unknown should be ignored
-            {IntentEnum.PRICE_REC_SERVICE},
-        ),
+        ("PRICE_REC_SERVICE", {IntentEnum.PRICE_REC_SERVICE}),
+        ("TIMELINE_REC_SERVICE", {IntentEnum.TIMELINE_REC_SERVICE}),
+        ("UNKNOWN", set()),  # should be ignored
     ],
 )
-
-def test_intent_classification(monkeypatch, ic_module, mock_response, expected):
-    # Patch the OpenAI client used inside the classifier so we don't hit the real API.
-    stub_client = _make_stub_client(mock_response)
-    monkeypatch.setattr(ic_module, "client", stub_client)
+def test_intent_classification(monkeypatch, ic_module, top_prediction, expected):
+    # Patch the cohere client used inside the classifier so we don't hit the real API.
+    stub_client = _make_stub_client(top_prediction)
+    monkeypatch.setattr(ic_module, "co", stub_client)
 
     result: List[IntentEnum] = ic_module.intent_classifier("dummy query")
 
     assert set(result) == expected
 
-    # Ensure the result list is sorted lexicographically by value, as implemented.
-    assert result == sorted(result, key=lambda x: x.value) 
+    # Ensure the result list is sorted by value.
+    assert result == sorted(result, key=lambda x: x.value)
