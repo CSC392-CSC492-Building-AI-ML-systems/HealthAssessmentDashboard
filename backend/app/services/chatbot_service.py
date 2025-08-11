@@ -4,6 +4,15 @@ from app.models.chat_message import ChatMessage
 from app.models.chat_history import ChatHistory
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
+from app.rag_tools.intent_classifier.intent_classifier import intent_classifier
+from typing import List, Dict, Any
+from app.models.enums import IntentEnum
+from app.services.agent_tools import (
+    retriever_service,
+    price_rec_service,
+    timeline_rec_service,
+)
+
 
 
 class ChatbotService:
@@ -134,3 +143,60 @@ class ChatbotService:
 
         # Save the file and optionally extract content or embeddings
         return True  # Placeholder
+    
+    async def call_tools(self, query: str) -> List[Dict[str, Any]]:
+        """Route *query* to the appropriate tools based on classified intents.
+
+        The function executes the following high-level flow:
+
+            1. Use the intent classifier to detect which tools are required.
+            2. For each intent, invoke the matching tool in the correct order.
+               • VECTORDB is a retriever returning metadata (list of dictionaries).
+               • PRICE_REC_SERVICE is an ML service that depends on metadata
+                 returned from a retriever; therefore it is executed after
+                 the relevant retriever to build its input.
+               • TIMELINE_REC_SERVICE is independent and can be called at any
+                 point.
+            3. Collect every individual tool response inside *responses*.
+            4. Return the list of responses.
+
+        The return value is a list of dictionaries, each having the shape:
+            {
+                "intent": IntentEnum value,
+                "response": <tool-specific output>,
+            }
+        """
+        # 1) Classify the query.
+        intents = intent_classifier(query)
+        if not intents:
+            return []
+
+        # 2) Establish order of execution of the tools
+        ordered_intents = [
+            IntentEnum.VECTORDB,
+            IntentEnum.PRICE_REC_SERVICE,
+            IntentEnum.TIMELINE_REC_SERVICE,
+        ]
+        execution_plan = [i for i in ordered_intents if i in intents]
+
+        responses: List[Dict[str, Any]] = []
+        metadata: List[Dict[str, Any]] | None = None
+
+        for intent in execution_plan:
+            if intent == IntentEnum.VECTORDB:
+                metadata = retriever_service.retrieve(query)
+                responses.append({"intent": intent, "response": metadata})
+
+            elif intent == IntentEnum.PRICE_REC_SERVICE:
+                # Metadata from the USER vector-DB
+                meta_data = metadata or {}
+                # TODO: Structure the metadata into the structure expected by the ML model.
+                prediction = price_rec_service.predict({"metadata": meta_data})
+                responses.append({"intent": intent, "response": prediction})
+
+            elif intent == IntentEnum.TIMELINE_REC_SERVICE:
+                timeline_data = timeline_rec_service.query(query)
+                responses.append({"intent": intent, "response": timeline_data})
+
+        return responses
+        
