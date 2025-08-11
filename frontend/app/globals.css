@@ -1,11 +1,4 @@
-@import "tailwindcss";
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
+@import "tailwindcss"; 
 
 /* for light mode */
 :root {
@@ -18,28 +11,19 @@ body {
   --button-red: #7E111A;
   --text-light: #0C1821;
   --feature-bg: #EDEDED;
-  --text-onhover-red: #7E111A;
-  --button-onhover-red: #5A0C13;
-  --gradient-color: #FFFFFF;
-
-
 
   /* Branding fonts */
   --font-body: var(--font-inter);
   --font-display: var(--font-outfit);
-}
+  }
 
-/* for dark mode */
-.dark {
-  --background: #0C1821;
-  --foreground: #CCC9DC;
-  --text-light: #EDEDED;
-  --text-onhover-red: #B8333C;
-  --button-onhover-red: #5A0C13;
-  --gradient-color: #262626;
-
-}
-
+  /* for dark mode */
+  .dark {
+    --background: #0C1821;
+    --foreground: #CCC9DC;
+    --text-light: #EDEDED;
+  }
+  
 
 @theme inline {
   --color-background: var(--background);
@@ -49,17 +33,16 @@ body {
 }
 
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-
-  100% {
-    transform: translateX(-100%);
-  }
+0% {
+  transform: translateX(0%);
+}
+100% {
+  transform: translateX(-100%);
+}
 }
 
 .animate-marquee {
-  animation: marquee var(--duration) linear infinite;
+animation: marquee var(--duration) linear infinite;
 }
 
 body {

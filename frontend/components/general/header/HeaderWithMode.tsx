@@ -8,7 +8,10 @@ const HeaderWithMode: React.FC = () => {
     const pathname = usePathname();
 
     const getHeaderMode = () => {
-        if (pathname === "/landing" || pathname === "/contact" || pathname === "/about") return "full";
+        if (pathname === "/landing" || pathname === "/contact" || pathname === "/about")
+             return "full";
+        else if (pathname.startsWith("/dashboard")) 
+            return "dashboard"
         return "logo-only";
     };
 

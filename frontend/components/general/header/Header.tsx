@@ -6,12 +6,14 @@ import Link from 'next/link';
 import React, { useEffect, useState } from "react";
 import Toggle from "../theme/Toggle";
 import Login from "../LoginButton";
+import Chatbot from "../ChatbotButton";
 
-type HeaderMode = "full" | "logo-only";
+type HeaderMode = "full" | "logo-only" | "dashboard";
 
 interface HeaderProps {
     mode?: HeaderMode;
 }
+
 
 const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
     const { theme } = useTheme();
@@ -30,8 +32,8 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
                 {/* <span className="text-[var(--text-light)] font-semibold text-lg">OurPATHS</span> */}
             </div>
 
-            {/* Nav Links */}
-            {mode === "full" && (
+            {/* Full or Dashboard */}
+            {mode === "full" ? (
                 <div className="flex items-center space-x-6 text-[var(--text-light)]">
                     <Link href="/" className="hover:text-gray-400">Home</Link>
                     <Link href="/about" className="hover:text-gray-400">About</Link>
@@ -39,7 +41,15 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
                     <Login />
                     <Toggle />
                 </div>
-            )}
+                // Dashboard has Account, Contact, Chatbot and Toggle Buttons
+            ) : mode === "dashboard" ? ( 
+                <div className="flex items-center space-x-6 text-[var(--text-light)]">
+                    <Link href="/account" className="hover:text-gray-400">Account</Link>
+                    <Link href="/contact" className="hover:text-gray-400">Contact</Link>
+                    <Chatbot />
+                    <Toggle />
+                </div>
+            ) : null}
         </nav>
 
     );

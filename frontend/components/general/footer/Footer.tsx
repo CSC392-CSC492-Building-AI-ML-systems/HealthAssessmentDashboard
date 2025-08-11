@@ -3,7 +3,7 @@
 import React from "react";
 import Link from 'next/link';
 
-type FooterMode = "full" | "empty";
+type FooterMode = "full" | "empty" | "partial";
 
 interface FooterProps {
   mode?: FooterMode;
@@ -11,6 +11,15 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ mode = "full" }) => {
   if (mode === "empty") return null;
+
+  if (mode === "partial") return (
+    <footer className="bg-[var(--background)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">
+      {/* Copyright on left */}
+      <div className="flex space-x-3 px-5 text-sm">
+        © Copyright OurPATHS 2025
+      </div>
+    </footer>
+  )
 
   return (
     <footer className="bg-[var(--background)] text-[var(--text-light)] px-6 py-4 flex justify-between items-center">

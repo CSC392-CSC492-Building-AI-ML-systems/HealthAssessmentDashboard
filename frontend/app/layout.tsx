@@ -45,7 +45,9 @@ export default async function RootLayout({
   const theme = themeCookie ? themeCookie.value : "dark";
   return (
     // <html lang="en" >
-    <html lang="en" className={theme} style={{ colorScheme: theme }}>
+    <html lang="en" className={theme} style={{ colorScheme: theme }}
+    suppressHydrationWarning
+    >
       <body
       // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

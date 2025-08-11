@@ -9,6 +9,8 @@ const FooterWithMode: React.FC = () => {
 
     const getFooterMode = () => {
         if (pathname === "/landing" || pathname === "/contact" || pathname === "/about") return "full";
+        else if (pathname.startsWith("/dashboard"))
+            return "partial";
         return "empty";
     };
 
