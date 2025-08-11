@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import Toggle from "../theme/Toggle";
 import Login from "../LoginButton";
 import Chatbot from "../ChatbotButton";
+import SearchBar from "../SearchBar";
 
 type HeaderMode = "full" | "logo-only" | "dashboard";
 
@@ -42,16 +43,27 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
                     <Toggle />
                 </div>
                 // Dashboard has Account, Contact, Chatbot and Toggle Buttons
-            ) : mode === "dashboard" ? ( 
-                <div className="flex items-center space-x-6 text-[var(--text-light)]">
-                    <Link href="/account" className="hover:text-gray-400">Account</Link>
-                    <Link href="/contact" className="hover:text-gray-400">Contact</Link>
+            ) : mode === "dashboard" ? (
+                <div className="flex items-center justify-between w-full text-[var(--foreground)]">
+               
+              
+                  {/* SearchBar */}
+                  <div className="flex justify-center w-full">
+                    <SearchBar />
+                  </div>
+              
+                  {/* Nav Buttons and Account Button */}
+                  <div className="flex items-center space-x-6">
+                    <Link href="/account" className="hover:text-[var(--foreground)]-400">Account</Link>
+                    <Link href="/contact" className="hover:text-[var(--foreground)]-400">Contact</Link>
                     <Chatbot />
                     <Toggle />
+                  </div>
                 </div>
-            ) : null}
+              ) : null}
+              
         </nav>
-
+    
     );
 }
 
