@@ -6,8 +6,7 @@ Implements a simple interface for extracting relevant information from the CDA v
 
 import numpy as np
 import faiss
-from typing import List
-import logging
+from typing import List, Optional
 from .vectordb_retriever import BaseRetriever, RetrievalResult
 
 # Import LangChain components, fall back to direct implementations
@@ -24,7 +23,6 @@ try:
     from data.Preprocessing.Data.azure_blob_store import load_embeddings
     from data.Preprocessing.config import EMBEDDING_MODEL
 except ImportError as e:
-    logging.error(f"Failed to import required modules: {e}")
     load_embeddings = None
     EMBEDDING_MODEL = "text-embedding-3-small"
 
@@ -81,7 +79,66 @@ class CDARetriever(BaseRetriever):
             self._metadata = []
             self._index_loaded = True
 
-    def _get_embedding(self, text: str) -> np.ndarray:
+    def retrieve(self, query: str, top_k: int = 10) -> List[RetrievalResult]:
+        """
+        Retrieve relevant information from the CDA vector database given a user query.
+        """
+        self._ensure_index_loaded()
+        if not query.strip():
+            return []
+
+        try:
+            if LANGCHAIN_AVAILABLE and self._vectorstore is not None:
+                docs_and_scores = self._vectorstore.similarity_search_with_score(query, k=top_k)
+                results = []
+                for rank, (doc, score) in enumerate(docs_and_scores):
+                    # Normalize LangChain output
+                    result = RetrievalResult(
+                        text=doc.page_content,
+                        metadata=doc.metadata if hasattr(doc, 'metadata') else {},
+                        score=float(1.0 - score),  # distance to similarity (0-1, higher is better)
+                        rank=rank + 1,
+                        database="CDA_VECTORDB"
+                    )
+                    results.append(result)
+                return results
+            
+            # FAISS implementation
+            elif self._index is not None and self._index.ntotal > 0:
+                # Query embedding
+                query_embedding = self._get_embedding(query)
+                if query_embedding is None:
+                    return []
+                
+                query_embedding = query_embedding.reshape(1, -1).astype(np.float32)
+                distances, indices = self._index.search(query_embedding, top_k)
+                
+                results = []
+                for rank, (distance, idx) in enumerate(zip(distances[0], indices[0])):
+                    if idx >= 0 and idx < len(self._metadata):  # Valid index
+                        metadata = self._metadata[idx] if self._metadata else {}
+                        
+                        # Extract text from metadata
+                        text = metadata.get('text', metadata.get('content', metadata.get('page_content', str(metadata))))
+                        
+                        # Normalize FAISS output
+                        result = RetrievalResult(
+                            text=text,
+                            metadata=metadata,
+                            score=float(1.0 - distance),  # distance to similarity (0-1, higher is better)
+                            rank=rank + 1,
+                            database="CDA_VECTORDB"
+                        )
+                        results.append(result)
+                return results
+            
+            else:
+                return []
+                
+        except Exception as e:
+            return []
+
+    def _get_embedding(self, text: str) -> Optional[np.ndarray]:
         """Get embedding for text using OpenAI's embedding model (fallback method)."""
         if OpenAI is None:
             return np.random.rand(1536).astype(np.float32)
@@ -96,65 +153,3 @@ class CDARetriever(BaseRetriever):
             return embedding
         except Exception as e:
             return np.random.rand(1536).astype(np.float32)
-
-    def retrieve(self, query: str, top_k: int = 10) -> List[RetrievalResult]:
-        """
-        Retrieve relevant information from the CDA vector database given a user query.
-        Uses LangChain FAISS if available, falls back to direct FAISS implementation.
-        """
-        self._ensure_index_loaded()
-        if not query.strip():
-            return []
-
-        try:
-            if LANGCHAIN_AVAILABLE and self._vectorstore is not None:
-                docs_and_scores = self._vectorstore.similarity_search_with_score(query, k=top_k)
-                results = []
-                for i, (doc, score) in enumerate(docs_and_scores):
-                    # Handle both Document objects and fallback to metadata
-                    if hasattr(doc, 'metadata') and hasattr(doc, 'page_content'):
-                        text = doc.page_content
-                        metadata = doc.metadata
-                    elif self._metadata and i < len(self._metadata):
-                        text = self._metadata[i].get('text', '')
-                        metadata = self._metadata[i]
-                    else:
-                        continue
-
-                    result = RetrievalResult(
-                        text=text,
-                        metadata={k: metadata.get(k, '') for k in ['drug_name', 'therapeutic_area', 'source', 'page', 'section_title', 'id']},
-                        score=float(score),
-                        rank=i + 1,
-                        database="CDA_VECTORDB"
-                    )
-                    results.append(result)
-                return results
-            
-            elif self._index is not None and self._index.ntotal > 0:
-                # Use direct FAISS implementation
-                query_embedding = self._get_embedding(query)
-                query_vector = query_embedding.reshape(1, -1)
-                scores, indices = self._index.search(query_vector, min(top_k, self._index.ntotal))
-                
-                results = []
-                for i, (score, idx) in enumerate(zip(scores[0], indices[0])):
-                    if idx < 0 or idx >= len(self._metadata):
-                        continue
-                    metadata = self._metadata[idx]
-                    similarity_score = float(1.0 / (1.0 + score))  # Convert L2 distance to similarity
-                    result = RetrievalResult(
-                        text=metadata.get('text', ''),
-                        metadata={k: metadata.get(k, '') for k in ['drug_name', 'therapeutic_area', 'source', 'page', 'section_title', 'id']},
-                        score=similarity_score,
-                        rank=i + 1,
-                        database="CDA_VECTORDB"
-                    )
-                    results.append(result)
-                return results
-            
-            else:
-                return []
-
-        except Exception as e:
-            return []
