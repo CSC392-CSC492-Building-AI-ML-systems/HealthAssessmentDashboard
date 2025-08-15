@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 MODEL = "gpt-4o-mini"   # TBD if this is the right model
 
 SYSTEM_PROMPT = """
-You are a formal pharmaceutical market-access assistant for Canada.
+You are a formal pharmaceutical market-access assistant in Canada.
 
 Requirements:
     - Answer the user's question directly in the first 1–3 sentences.
@@ -50,7 +50,7 @@ def reformat(
     if not isinstance(data_dict, dict):
         raise ValueError("data_dict must be a dict")
 
-    # Build/OpenAI client
+    # Build OpenAI client
     if client is None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -109,14 +109,14 @@ def reformat(
 
     text = text.strip()
 
-    # Minimal post-check: append Sources only if we have them and the model forgot.
+    # Minimal post-check: append Sources only if existing
     if sources_list and "Sources:" not in text:
         text += "\n\nSources:\n" + "\n".join(_format_source_line(s) for s in sources_list)
-    # If there are no sources, we do nothing; the model was told to omit the section.
+    # If there are no sources, do nothing
 
     return text
 
-# ----------------------------- helper functions ------------------------------
+# ---- helper functions
 
 def _format_snippets(snippets: List[Any]) -> str:
     """List[{text}] -> bullet lines. Assumes ≤6 items from normalizer."""
@@ -196,7 +196,7 @@ def _format_source_line(s: Dict[str, str]) -> str:
         line += f" — {url}"
     return f"- {line}"
 
-# (Simple inline jurisdiction formatter; avoids extra helper noise)
+# Simple inline jurisdiction formatter; avoids extra helper noise
 def _format_jurisdiction(j: Dict[str, Any]) -> str:
     country = (j.get("country") or "Canada").strip()
     province = (j.get("province") or "").strip()
