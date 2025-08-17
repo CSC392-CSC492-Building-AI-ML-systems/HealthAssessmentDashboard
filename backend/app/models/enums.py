@@ -14,3 +14,11 @@ class IntentEnum(str, Enum):
     VECTORDB = "VECTORDB"
     PRICE_REC_SERVICE = "PRICE_REC_SERVICE"
     TIMELINE_REC_SERVICE = "TIMELINE_REC_SERVICE"
+
+class DatabaseEnum(str, Enum):
+    """Database types for vector retrieval.
+    
+    Specifies which vector database to query for information retrieval.
+    """
+    CDA_VECTORDB = "CDA_VECTORDB"
+    USER_VECTORDB = "USER_VECTORDB"
