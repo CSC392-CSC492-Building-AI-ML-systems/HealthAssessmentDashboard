@@ -108,29 +108,30 @@ async def refresh_token(
 ):
     """Get a new access token using the refresh token from httpOnly cookie."""
     if not refresh_token:
-        raise HTTPException(
+        clear_auth_cookies(response)
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token missing",
+            content={"detail": "Refresh token missing"},
+            headers=response.headers,
         )
 
     user_id = auth_service.verify_token(refresh_token, "refresh")
     if not user_id:
         clear_auth_cookies(response)
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token",
+            content={"detail": "Invalid refresh token"},
+            headers=response.headers,
         )
-    
-    # Generate new token pair
-    tokens = auth_service.create_token_pair(user_id)
-    
-    # Update cookies
-    set_auth_cookies(response, tokens.access_token, tokens.refresh_token)
-    
-    return {
-        "access_token": tokens.access_token,
-        "token_type": "bearer"
-    }
+
+    # Generate new tokens
+    new_access_token = auth_service.create_access_token(user_id)
+    new_refresh_token = auth_service.create_refresh_token(user_id)
+
+    # Set new cookies
+    set_auth_cookies(response, new_access_token, new_refresh_token)
+
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 @router.post("/logout")
 async def logout(response: Response):

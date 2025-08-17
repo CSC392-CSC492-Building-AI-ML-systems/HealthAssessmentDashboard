@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
+import uuid
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,13 +73,13 @@ class AuthService:
     def create_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         """Create a JWT token with given data and expiration"""
         to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-        to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, self._config.secret_key, algorithm=self._config.algorithm)
-        return encoded_jwt
+        expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
+        to_encode.update({
+            "exp": expire,
+            "iat": datetime.now(timezone.utc),
+            "jti": str(uuid.uuid4()),
+        })
+        return jwt.encode(to_encode, self._config.secret_key, algorithm=self._config.algorithm)
 
     # Create access token
     def create_access_token(self, user_id: int) -> str:
@@ -150,7 +151,6 @@ class AuthService:
             return user_id
         except (JWTError, ValueError, TypeError):
             return None
-
 
 # Dependency to get the current user from JWT token
 security = HTTPBearer()
