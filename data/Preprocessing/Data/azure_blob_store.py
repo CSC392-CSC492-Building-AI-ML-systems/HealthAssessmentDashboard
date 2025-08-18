@@ -161,7 +161,7 @@ def upload_jsonl_to_blob(summaries, blob_name="summaries.jsonl"):
 
 
 def download_jsonl_from_blob(blob_name="summaries.jsonl"):
-    """Downloads a JSONL file from Azure Blob Storage container and returns a list of dictionaries"""
+    """Downloads a JSONL file from Azure Blob Storage container and returns a list of dictionaries """
 
     blob_client = container_client.get_blob_client(blob_name)
 
