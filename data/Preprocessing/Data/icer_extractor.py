@@ -46,16 +46,6 @@ def _scan_for_icer(text: str) -> Tuple[Optional[float], str]:
                 return num, "numeric"
     return None, "not_found"
 
-def _uniq(seq):
-    seen = set()
-    out = []
-    for x in seq:
-        key = json.dumps(x, sort_keys=True) if isinstance(x, dict) else x
-        if key not in seen:
-            seen.add(key)
-            out.append(x)
-    return out
-
 def retrieve_context(drug_name: str, k_total: int = 20) -> List[Dict]:
     try:
         index, meta = load_embeddings()
