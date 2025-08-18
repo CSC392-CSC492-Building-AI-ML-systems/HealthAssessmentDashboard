@@ -170,6 +170,11 @@ def extract_all_noc_entry_fields(url: str):
 
     entry_fields = {v: raw_fields.get(k) for k, v in field_map.items()}
 
-    # print(entry_fields)
+    # Normalize therapeutic_class into a list
+    therapeutic = entry_fields.get("therapeutic_class")
+    if therapeutic:
+        entry_fields["therapeutic_class"] = [t.strip() for t in therapeutic.split(";")]
+    else:
+        entry_fields["therapeutic_class"] = []
 
     return entry_fields

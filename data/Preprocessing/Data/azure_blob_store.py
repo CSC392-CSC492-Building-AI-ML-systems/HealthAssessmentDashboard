@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import pickle
 import uuid
 import faiss
@@ -8,8 +9,11 @@ from datetime import datetime
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
-load_dotenv()
+parent_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if parent_folder not in sys.path:
+    sys.path.insert(0, parent_folder)
 
+load_dotenv()
 from config import (
     UNIFIED_INDEX_PATH,
     UNIFIED_METADATA_PATH,
@@ -19,7 +23,7 @@ from azure.storage.blob import BlobServiceClient
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Azure Blob Storage Setup 
+# Azure Blob Storage Setup
 blob_service_client = BlobServiceClient.from_connection_string(os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
 container_client = blob_service_client.get_container_client(os.getenv("AZURE_CONTAINER_NAME"))
 
@@ -156,3 +160,19 @@ def upload_jsonl_to_blob(summaries, blob_name="summaries.jsonl"):
     print(f"Appended {len(summaries)} summaries to {blob_name}")
 
 
+def download_jsonl_from_blob(blob_name="summaries.jsonl"):
+    """Downloads a JSONL file from Azure Blob Storage container and returns a list of dictionaries"""
+
+    blob_client = container_client.get_blob_client(blob_name)
+
+    if not blob_client.exists():
+        print(f"Blob {blob_name} does not exist.")
+        return []
+
+    blob_data = blob_client.download_blob().readall()
+    text_data = blob_data.decode("utf-8")
+
+    records = [json.loads(line) for line in text_data.strip().split("\n") if line.strip()]
+
+    print(f"Downloaded {len(records)} records from {blob_name}")
+    return records

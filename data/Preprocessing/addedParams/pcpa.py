@@ -20,11 +20,13 @@ def get_pcpa_data(brand_name: str, cda_project_number: str):
 
     # THE pCPA CAN BE INDEXED BY THE SAME PROJECT NUMBER AS CDA, SO FIND THE ENTRY WITH THE MATCHING PROJECT NUMBER
     associated_entry_fields = None
+    all_entry_fields = []
     for entry in pcpa_entries:
         driver.get(entry["product_link"])
         entry_fields = extract_all_pcpa_entry_fields(entry["product_link"])
         print("ENTRY NUMBER", entry_fields["cda_project_number"])
         print("CDA NUMBER", cda_project_number)
+        all_entry_fields.append(entry_fields)
         if entry_fields["cda_project_number"] == cda_project_number:
             associated_entry_fields = entry_fields
             break
@@ -33,13 +35,13 @@ def get_pcpa_data(brand_name: str, cda_project_number: str):
         print("Successfully found an associated pCPA entry by CDA project number.")
 
         # PARAM #5 (pCPA ENGAGEMENT LETTER ISSUED): Time from NOC to pCPA Engagement / Reimbursement Listing
-        pcpa_engagement_letter_issued = associated_entry_fields["original_market_date"]
+        pcpa_engagement_letter_issued = associated_entry_fields["pcpa_engagement_letter_issued"]
         # PARAM #5 (NEGOTIATION PROCESS CONCLUDED): Time from NOC to pCPA Engagement / Reimbursement Listing
-        negotiation_process_concluded = associated_entry_fields["original_market_date"]
+        negotiation_process_concluded = associated_entry_fields["negotiation_process_concluded"]
     else:
-        print("Failed to find an associated pCPA entry by CDA project number.")
-        pcpa_engagement_letter_issued = None
-        negotiation_process_concluded = None
+        print("Failed to find an associated pCPA entry by CDA project number, using the oldest entry...")
+        pcpa_engagement_letter_issued = all_entry_fields[-1]["pcpa_engagement_letter_issued"]
+        negotiation_process_concluded = all_entry_fields[-1]["negotiation_process_concluded"]
 
     driver.quit()
 
@@ -126,24 +128,21 @@ def extract_all_pcpa_entry_fields(url: str):
     print("TABLE")
     print(table)
 
-    entry_fields = {}
-
-    entry_fields["pcpa_file_number"] = table.find_element(By.CSS_SELECTOR,
-                                                          "div.views-field-nid span.field-content").text.strip()
-    entry_fields["negotiation_status"] = table.find_element(By.CSS_SELECTOR,
-                                                            "div.views-field-field-status div.field-content").text.strip()
-    entry_fields["indications"] = table.find_element(By.CSS_SELECTOR,
-                                                     "div.views-field-field-indication-txt div.field-content").text.strip()
-    entry_fields["manufacturer"] = table.find_element(By.CSS_SELECTOR,
-                                                      "div.views-field-field-manufacturer-name div.field-content").text.strip()
-    entry_fields["cda_project_number"] = table.find_element(By.CSS_SELECTOR,
-                                                            "div.views-field-field-cadth-project-id div.field-content").text.strip()
-    entry_fields["pcpa_engagement_letter_issued"] = table.find_element(
-        By.CSS_SELECTOR,
-        "div.views-field-field-engagement-date div.field-content"
-    ).text.strip()
-    entry_fields["negotiation_process_concluded"] = table.find_element(By.CSS_SELECTOR,
-                                                                       "div.views-field-field-close-date time").get_attribute(
-        "datetime").strip()
+    entry_fields = {"pcpa_file_number": table.find_element(By.CSS_SELECTOR,
+                                                           "div.views-field-nid span.field-content").text.strip(),
+                    "negotiation_status": table.find_element(By.CSS_SELECTOR,
+                                                             "div.views-field-field-status div.field-content").text.strip(),
+                    "indications": table.find_element(By.CSS_SELECTOR,
+                                                      "div.views-field-field-indication-txt div.field-content").text.strip(),
+                    "manufacturer": table.find_element(By.CSS_SELECTOR,
+                                                       "div.views-field-field-manufacturer-name div.field-content").text.strip(),
+                    "cda_project_number": table.find_element(By.CSS_SELECTOR,
+                                                             "div.views-field-field-cadth-project-id div.field-content").text.strip(),
+                    "pcpa_engagement_letter_issued": table.find_element(
+                        By.CSS_SELECTOR,
+                        "div.views-field-field-engagement-date div.field-content"
+                    ).text.strip(), "negotiation_process_concluded": table.find_element(By.CSS_SELECTOR,
+                                                                                        "div.views-field-field-close-date time").get_attribute(
+            "datetime").strip()}
 
     return entry_fields
