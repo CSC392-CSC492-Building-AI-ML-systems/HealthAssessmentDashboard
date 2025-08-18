@@ -1,4 +1,5 @@
 from selenium import webdriver
+from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,6 +21,22 @@ def selenium_screenshot(driver, name: str):
     total_height = driver.execute_script("return document.body.scrollHeight")
     driver.set_window_size(1920, total_height)
     driver.save_screenshot(name)
+
+
+def calculate_time_difference(start_date, end_date):
+    """
+    Calculates the difference in days between two dates.
+    Both dates must be strings in 'YYYY-MM-DD' format.
+    """
+    if not start_date or not end_date:
+        return None  # Handle missing data gracefully
+
+    try:
+        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+        return (end - start).days
+    except ValueError:
+        return None
 
 
 def classify_drug_type(atc_code: str, active_ingredients: str, dosage_forms: str, indication_text: str = '', noc_pathway: str = '') -> str:
