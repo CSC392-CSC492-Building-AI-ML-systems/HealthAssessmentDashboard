@@ -5,6 +5,7 @@ import Header from "@/components/general/header/HeaderWithMode";
 import { cookies } from "next/headers";
 import { LightDarkProvider } from "@/components/general/theme/LightDarkProvider";
 import { ToastProvider } from "@/components/general/ToastProvider";
+import { AuthProvider } from "@/hooks/useAuth";
 import { Inter, Outfit } from 'next/font/google';
 import "./globals.css";
 
@@ -54,15 +55,17 @@ export default async function RootLayout({
           {/* Header */}
           <LightDarkProvider>
             <ToastProvider position="top-center" maxToasts={3}>
-              <Header />
+              <AuthProvider> 
+                <Header />
 
-              {/* Middle content */}
-              <main className="flex-1">
-                {children}
-              </main>
+                {/* Middle content */}
+                <main className="flex-1">
+                  {children}
+                </main>
 
-              {/* Footer */}
-              <Footer />
+                {/* Footer */}
+                <Footer />
+              </AuthProvider>
             </ToastProvider>
           </LightDarkProvider>
         </div>
