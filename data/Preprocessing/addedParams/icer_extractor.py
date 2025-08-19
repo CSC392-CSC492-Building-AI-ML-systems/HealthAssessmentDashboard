@@ -5,12 +5,8 @@ import json
 from typing import Dict, List, Tuple, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
+from data.Preprocessing.Data.azure_blob_store import load_embeddings
 
-try:
-    from Data.azure_blob_store import load_embeddings
-except Exception:
-    def load_embeddings():
-        return None, None
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -54,7 +50,7 @@ def retrieve_context(drug_name: str, k_total: int = 20) -> List[Dict]:
     if not index or not meta:
         return []  # local mode: no retrieval
     # if you use retrieve_top_k, make sure it is imported correctly:
-    from embeddings_utils import retrieve_top_k
+    from data.Preprocessing.embeddings_utils import retrieve_top_k
     queries = [
         f"{drug_name} ICER",
         f"{drug_name} cost per QALY",

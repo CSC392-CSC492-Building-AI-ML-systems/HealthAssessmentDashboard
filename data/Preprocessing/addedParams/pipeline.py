@@ -1,10 +1,9 @@
-from data.Preprocessing.Data.azure_blob_store import download_jsonl_from_blob
+from data.Preprocessing.Data.azure_blob_store import download_jsonl_from_blob, upload_jsonl_to_blob
 from health_canada_noc import get_noc_data
 from health_canada_drug import get_health_canada_data
 from pcpa import get_pcpa_data
+from data.Preprocessing.addedParams.icer_extractor import extract_icer
 from data.Preprocessing.addedParams.utils import classify_drug_type, calculate_time_difference
-from data.Preprocessing.Data.azure_blob_store import upload_jsonl_to_blob
-
 
 def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = None):
     """Get all data that is useful from the three sources, which are the following parameters for
@@ -21,6 +20,10 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
     for drug in drug_records:
         brand_name = drug["Brand Name"]
         cda_project_number = drug["Project ID"]
+
+        # PARAM #2: ICER/QALY
+        icer = extract_icer(brand_name, "")
+        drug.update(icer)
 
         # COLLECT ALL DATA REQUIRED FROM NOC DATABASE
         dins, original_noc_date, therapeutic_class, submission_class = get_noc_data(brand_name)
@@ -56,6 +59,8 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
         drug["Submission Pathway"] = submission_class
 
     upload_jsonl_to_blob(drug_records, "params_5_8_9.jsonl")
+
+
 
 
 if __name__ == "__main__":
