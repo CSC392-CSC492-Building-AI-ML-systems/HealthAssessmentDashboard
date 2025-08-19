@@ -1,12 +1,12 @@
-# Data/icer_extractor.py
 import os
 import re
 import json
 from typing import Dict, List, Tuple, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
-from data.Preprocessing.Data.azure_blob_store import load_embeddings
 
+from data.Preprocessing.Data.azure_blob_store import load_embeddings
+from data.Preprocessing.embeddings_utils import retrieve_top_k
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -20,7 +20,11 @@ ICER_PATTERNS = [
 
 DOMINANT_RE = re.compile(r'\bdominant\b', re.I)
 DOMINATED_RE = re.compile(r'\bdominated\b', re.I)
-CURRENCY_RE = re.compile(r'(?:C\$|CAD|\$)')
+
+def _make_snippet(text: str, start: int, end: int, radius: int = 120) -> str:
+    s = max(0, start - radius)
+    e = min(len(text), end + radius)
+    return (text[s:e] or "").replace("\n", " ").strip()
 
 def _clean_money(val: str) -> Optional[float]:
     try:
@@ -28,29 +32,38 @@ def _clean_money(val: str) -> Optional[float]:
     except Exception:
         return None
 
-def _scan_for_icer(text: str) -> Tuple[Optional[float], str]:
-    # Dominance language check
-    if DOMINANT_RE.search(text):
-        return 0.0, "dominant"
-    if DOMINATED_RE.search(text):
-        return None, "dominated"
+def _scan_for_icer(text: str) -> Tuple[Optional[float], str, Optional[str]]:
+    if not text:
+        return None, "not_found", None
+
+    m = DOMINANT_RE.search(text)
+    if m:
+        return 0.0, "dominant", _make_snippet(text, m.start(), m.end())
+
+    m = DOMINATED_RE.search(text)
+    if m:
+        return None, "dominated", _make_snippet(text, m.start(), m.end())
 
     for pat in ICER_PATTERNS:
         for m in re.finditer(pat, text, re.I | re.S):
             num = _clean_money(m.group(1))
             if num is not None:
-                return num, "numeric"
-    return None, "not_found"
+                return num, "numeric", _make_snippet(text, m.start(), m.end())
+
+    return None, "not_found", None
 
 def retrieve_context(drug_name: str, k_total: int = 20) -> List[Dict]:
+    # lazy import so quick PDF tests do not touch Azure
     try:
+        from data.Preprocessing.Data.azure_blob_store import load_embeddings
         index, meta = load_embeddings()
     except Exception:
         index, meta = None, None
     if not index or not meta:
-        return []  # local mode: no retrieval
-    # if you use retrieve_top_k, make sure it is imported correctly:
+        return []
+
     from data.Preprocessing.embeddings_utils import retrieve_top_k
+
     queries = [
         f"{drug_name} ICER",
         f"{drug_name} cost per QALY",
@@ -63,12 +76,11 @@ def retrieve_context(drug_name: str, k_total: int = 20) -> List[Dict]:
     per_q = max(3, k_total // len(queries))
     for q in queries:
         results.extend(retrieve_top_k(index, meta, q, k=per_q))
-    # sort by distance asc, keep top unique by (source,page,text)
     results.sort(key=lambda r: r["score"])
     unique = []
     seen_keys = set()
     for r in results:
-        key = (r.get("source"), r.get("page"), r.get("text")[:80])
+        key = (r.get("source"), r.get("page"), r.get("text", "")[:80])
         if key in seen_keys:
             continue
         seen_keys.add(key)
@@ -78,7 +90,6 @@ def retrieve_context(drug_name: str, k_total: int = 20) -> List[Dict]:
     return unique
 
 def llm_disambiguate(drug_name: str, chunks: List[Dict]) -> Dict:
-    # Keep it small and deterministic. Ask for a single JSON object.
     context_blocks = []
     for c in chunks[:6]:
         loc = f"{c.get('source','?')}:p{c.get('page','?')}"
@@ -87,43 +98,42 @@ def llm_disambiguate(drug_name: str, chunks: List[Dict]) -> Dict:
 
     context_str = "\n\n".join(context_blocks)
     prompt = f"""
-    You extract the base-case ICER for a Canadian drug assessment.
-    Rules:
-    - Prefer base case over scenarios.
-    - If the text says "dominant" for base case, set icer_value_numeric = 0 and icer_note = "dominant".
-    - If the text says "dominated" for base case and no number is given, set icer_value_numeric = null and icer_note = "dominated".
-    - If multiple ICERs exist, choose base case for the primary population.
-    - Return a single strict JSON object only.
+You extract the base-case ICER for a Canadian drug assessment.
+Rules:
+- Prefer base case over scenarios.
+- If the text says "dominant" for base case, set icer_value_numeric = 0 and icer_note = "dominant".
+- If the text says "dominated" for base case and no number is given, set icer_value_numeric = null and icer_note = "dominated".
+- If multiple ICERs exist, choose base case for the primary population.
+- Return a single strict JSON object only.
 
-    DRUG: {drug_name}
+DRUG: {drug_name}
 
-    CONTEXT:
-    {context_str}
+CONTEXT:
+{context_str}
 
-    Return schema:
-    {{
-    "icer_value_numeric": float|null,
-    "icer_currency": "CAD"|"USD"|null,
-    "icer_unit": "cost_per_QALY"|null,
-    "icer_year": int|null,
-    "icer_perspective": "public"|"payer"|"societal"|null,
-    "icer_population": string|null,
-    "icer_comparator": string|null,
-    "icer_note": string|null,
-    "status": "found"|"ambiguous"|"not_found",
-    "source_page_refs": [string]
-    }}
-    """
+Return schema:
+{{
+ "icer_value_numeric": float|null,
+ "icer_currency": "CAD"|"USD"|null,
+ "icer_unit": "cost_per_QALY"|null,
+ "evidence_quote": string|null,
+ "icer_year": int|null,
+ "icer_perspective": "public"|"payer"|"societal"|null,
+ "icer_population": string|null,
+ "icer_comparator": string|null,
+ "icer_note": string|null,
+ "status": "found"|"ambiguous"|"not_found",
+ "source_page_refs": [string]
+}}
+""".strip()
     resp = client.chat.completions.create(
         model=os.getenv("OPENAI_MODEL_ICER", "gpt-4o-mini"),
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
     txt = resp.choices[0].message.content.strip()
-    # Try to parse JSON directly.
     if txt.startswith("```"):
         txt = txt.strip("`")
-        # after strip, content may still include json hint
         if txt.startswith("json"):
             txt = txt[4:]
         txt = txt.strip()
@@ -140,9 +150,9 @@ def llm_disambiguate(drug_name: str, chunks: List[Dict]) -> Dict:
             "icer_comparator": None,
             "icer_note": "parse_error",
             "status": "not_found",
-            "source_page_refs": []
+            "source_page_refs": [],
+            "evidence_quote": None
         }
-    # Minimal normalization
     if data.get("icer_value_numeric") is not None:
         try:
             data["icer_value_numeric"] = float(data["icer_value_numeric"])
@@ -153,7 +163,6 @@ def llm_disambiguate(drug_name: str, chunks: List[Dict]) -> Dict:
     if not data.get("icer_unit"):
         data["icer_unit"] = "cost_per_QALY"
     if not data.get("icer_currency"):
-        # default to CAD unless the text clearly says otherwise
         data["icer_currency"] = "CAD"
     return data
 
@@ -161,30 +170,47 @@ def extract_icer(drug_name: str, pdf_text: str) -> Dict:
     """
     Returns a normalized ICER record with provenance fields.
     Strategy:
-      1) Regex over full PDF text.
-      2) If not found, retrieve top chunks from FAISS and regex them.
+      1) Regex over provided PDF text and stop if given.
+      2) Otherwise retrieve top chunks and regex them.
       3) If still not decisive, call LLM disambiguation.
     """
-    # Step 1: try regex over whole text
-    v, note = _scan_for_icer(pdf_text)
-    if note in ("dominant", "dominated", "numeric"):
+    # Step 1: if caller provided text, do regex-only and stop here
+    if pdf_text and pdf_text.strip():
+        v, note, snip = _scan_for_icer(pdf_text)
+        if note in ("dominant", "dominated", "numeric"):
+            return {
+                "icer_value_numeric": v,
+                "icer_currency": "CAD",
+                "icer_unit": "cost_per_QALY",
+                "icer_year": None,
+                "icer_perspective": None,
+                "icer_population": None,
+                "icer_comparator": None,
+                "icer_note": note,
+                "status": "found",
+                "source_page_refs": ["combined_pdf_text"],
+                "icer_context_text": snip,
+                "icer_match_type": "regex_pdf"
+            }
         return {
-            "icer_value_numeric": v,
+            "icer_value_numeric": None,
             "icer_currency": "CAD",
             "icer_unit": "cost_per_QALY",
             "icer_year": None,
             "icer_perspective": None,
             "icer_population": None,
             "icer_comparator": None,
-            "icer_note": note,
-            "status": "found",
-            "source_page_refs": ["combined_pdf_text"]
+            "icer_note": "no_match_in_pdf_text",
+            "status": "not_found",
+            "source_page_refs": [],
+            "icer_context_text": None,
+            "icer_match_type": "none"
         }
 
     # Step 2: retrieval and regex over top chunks
     chunks = retrieve_context(drug_name, k_total=20)
     for ch in chunks:
-        vv, nn = _scan_for_icer(ch.get("text", ""))
+        vv, nn, snip = _scan_for_icer(ch.get("text", ""))
         if nn in ("dominant", "dominated", "numeric"):
             ref = f"{ch.get('source','?')}:p{ch.get('page','?')}"
             return {
@@ -197,14 +223,18 @@ def extract_icer(drug_name: str, pdf_text: str) -> Dict:
                 "icer_comparator": None,
                 "icer_note": nn,
                 "status": "found",
-                "source_page_refs": [ref]
+                "source_page_refs": [ref],
+                "icer_context_text": snip,
+                "icer_match_type": "regex_retrieval"
             }
 
     # Step 3: LLM disambiguation
     llm_res = llm_disambiguate(drug_name, chunks)
-    # add explicit source refs in case model forgot
     if not llm_res.get("source_page_refs"):
         llm_res["source_page_refs"] = [
             f"{c.get('source','?')}:p{c.get('page','?')}" for c in chunks[:6]
         ]
+    if llm_res.get("evidence_quote"):
+        llm_res["icer_context_text"] = llm_res["evidence_quote"]
+    llm_res["icer_match_type"] = "llm"
     return llm_res

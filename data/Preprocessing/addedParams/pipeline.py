@@ -4,6 +4,7 @@ from health_canada_drug import get_health_canada_data
 from pcpa import get_pcpa_data
 from data.Preprocessing.addedParams.icer_extractor import extract_icer
 from data.Preprocessing.addedParams.utils import classify_drug_type, calculate_time_difference
+from data.Preprocessing.addedParams.msp_extractor import extract_msp
 
 def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = None):
     """Get all data that is useful from the three sources, which are the following parameters for
@@ -38,6 +39,10 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
         print("ORIGINAL DATE", original_noc_date)
         print("pcpa engagement letter issued", pcpa_engagement_letter_issued)
         time_from_noc_to_pcpa = calculate_time_difference(original_noc_date, pcpa_engagement_letter_issued)
+
+        # PARAM #6: MSP
+        msp = extract_msp(brand_name, "")
+        drug.update(msp)
 
         # PARAM #8: Drug Type (Biologic, Rare Disease, Oncology, etc.)
         drug_type = classify_drug_type(
