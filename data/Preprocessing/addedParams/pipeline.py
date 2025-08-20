@@ -9,6 +9,8 @@ from data.Preprocessing.addedParams.icer_extractor import extract_icer
 from data.Preprocessing.addedParams.utils import classify_drug_type, calculate_time_difference
 from data.Preprocessing.addedParams.msp_extractor import extract_msp
 from data.Preprocessing.addedParams.price_context import extract_price_recommendation_context
+from data.Preprocessing.addedParams.comparator_price import compute_comparator_price
+from data.Preprocessing.Data.azure_blob_store import load_embeddings
 
 def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
     """Get all data that is useful from the three sources, which are the following parameters for
@@ -22,6 +24,12 @@ def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
 
     drug_records = drug_records[start_index:end_index]
 
+    # Load the FAISS index and metadata once
+    try:
+        index, meta = load_embeddings()  # warm cache once
+    except Exception:
+        index, meta = (None, None)
+
     for drug in drug_records:
         brand_name = drug["Brand Name"]
         cda_project_number = drug["Project ID"]
@@ -32,6 +40,7 @@ def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
 
         # PARAM #2: ICER/QALY
         icer = extract_icer(brand_name, "")
+        print("icer", icer)
         drug.update(icer)
 
         # COLLECT ALL DATA REQUIRED FROM NOC DATABASE
@@ -50,6 +59,7 @@ def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
 
         
         msp = extract_msp(brand_name, "")
+        print("msp", msp)
         drug.update(msp)
 
         # PARAM #8: Drug Type (Biologic, Rare Disease, Oncology, etc.)
@@ -70,6 +80,12 @@ def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
         drug["Drug Type"] = drug_type
         drug["Therapeutic Class"] = therapeutic_class
         drug["Submission Pathway"] = submission_class
+
+    # Pass 2: Comparator Price
+    for drug in drug_records:
+        comparator_price = compute_comparator_price(drug, drug_records, index, meta)
+        print("comparator_price", comparator_price)
+        drug.update(comparator_price)
 
     upload_jsonl_to_blob(drug_records, "params_5_8_9.jsonl")
 

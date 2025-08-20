@@ -6,7 +6,7 @@ from openai import OpenAI
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# phrases commonly used around a CADTH recommended price
+# phrases commonly used around recommended price
 PHRASES = [
     r"(?:recommended|recommendation|should not exceed|price cap|price reduction.*?to|be reduced to|at a price of)",
 ]
