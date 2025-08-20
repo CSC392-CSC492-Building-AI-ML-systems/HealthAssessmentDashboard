@@ -1,11 +1,4 @@
-@import "tailwindcss";
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
+@import "tailwindcss"; 
 
 
 /* for light mode */
@@ -30,8 +23,6 @@ body {
   --main-body: #e9e9ee;
   --headerfooter: #ccc9dc;
   --bars:#F4F4F4;
-
-
 
   /* Branding fonts */
   --font-body: var(--font-inter);
@@ -58,7 +49,7 @@ body {
   --feature-bg: #EDEDED;
 
 }
-
+  
 
 @theme inline {
   --color-background: var(--background);
@@ -68,6 +59,16 @@ body {
 }
 
 @keyframes marquee {
+0% {
+  transform: translateX(0%);
+}
+100% {
+  transform: translateX(-100%);
+}
+}
+
+.animate-marquee {
+animation: marquee var(--duration) linear infinite;
   0% {
     transform: translateX(0%);
   }
