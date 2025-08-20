@@ -18,10 +18,6 @@ export const TherapeuticChart = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-[var(--foreground)]">Therapeutic Area Analysis</CardTitle>
-        <p className="text-sm text-[var(--foreground)]">
-          FDA Approvals by Therapeutic Area Over Time (Excluding "Other")
-        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
@@ -35,48 +31,48 @@ export const TherapeuticChart = () => {
               type="monotone"
               dataKey="Cardiovascular"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
             <Area
               type="monotone"
               dataKey="Immunology"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
             <Area
               type="monotone"
               dataKey="Infectious Disease"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
             <Area
               type="monotone"
               dataKey="Neurology"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
             <Area
               type="monotone"
               dataKey="Oncology"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
             <Area
               type="monotone"
               dataKey="Rare Disease"
               stackId="1"
-              stroke={"(var(--foreground))"}
-              fill={"(var(--foreground))"}
+              stroke="var(--foreground)"
+              fill="var(--foreground)"
               fillOpacity={0.8}
             />
           </AreaChart>

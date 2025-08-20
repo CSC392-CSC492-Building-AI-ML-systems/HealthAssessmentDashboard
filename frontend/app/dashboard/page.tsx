@@ -40,7 +40,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background p-6 space-y-8">
       {/* Latest Market Intelligence */}
       <section>
-        <h1 className="text-3xl font-bold mb-6">Latest Market Intelligence</h1>
+        <h1 className="text-3xl font-bold text-[var(--foreground)] mb-6">Latest Market Intelligence</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {newsItems.map((item, index) => (
             <NewsCard key={index} title={item.title} description={item.description} />
@@ -49,7 +49,8 @@ const Dashboard = () => {
       </section>
 
       {/* External Drugs Tracker */}
-      <section className="bg-accent/20 p-6 rounded-lg">
+      <section className="w-full">
+      <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">External Drug Tracker</h2>
         <DrugTracker />
       </section>
 
@@ -57,7 +58,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Internal Portfolio Predictions */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Internal Portfolio Predictions</h2>
+          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Internal Portfolio Predictions</h2>
           <div className="space-y-6">
             {projects.map((project, index) => (
               <ProjectCard
@@ -73,6 +74,7 @@ const Dashboard = () => {
 
         {/* Therapeutic Area Analysis */}
         <section>
+        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Therapeutic Area Analysis</h2>
           <TherapeuticChart />
         </section>
       </div>

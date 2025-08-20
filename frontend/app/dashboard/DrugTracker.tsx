@@ -56,9 +56,8 @@ import {
   
   export const DrugTracker = () => {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">External Drugs Tracker</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
