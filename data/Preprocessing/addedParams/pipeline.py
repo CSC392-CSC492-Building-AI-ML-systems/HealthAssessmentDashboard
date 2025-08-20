@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+
 from data.Preprocessing.Data.azure_blob_store import download_jsonl_from_blob, upload_jsonl_to_blob
 from health_canada_noc import get_noc_data
 from health_canada_drug import get_health_canada_data
@@ -5,8 +8,9 @@ from pcpa import get_pcpa_data
 from data.Preprocessing.addedParams.icer_extractor import extract_icer
 from data.Preprocessing.addedParams.utils import classify_drug_type, calculate_time_difference
 from data.Preprocessing.addedParams.msp_extractor import extract_msp
+from data.Preprocessing.addedParams.price_context import extract_price_recommendation_context
 
-def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = None):
+def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
     """Get all data that is useful from the three sources, which are the following parameters for
     prediction model training:
 
@@ -21,6 +25,10 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
     for drug in drug_records:
         brand_name = drug["Brand Name"]
         cda_project_number = drug["Project ID"]
+
+        # Add price recommendation context
+        price_ctx = extract_price_recommendation_context(drug["Brand Name"], drug.get("Price Recommendation"))
+        drug.update(price_ctx)
 
         # PARAM #2: ICER/QALY
         icer = extract_icer(brand_name, "")
@@ -40,7 +48,7 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
         print("pcpa engagement letter issued", pcpa_engagement_letter_issued)
         time_from_noc_to_pcpa = calculate_time_difference(original_noc_date, pcpa_engagement_letter_issued)
 
-        # PARAM #6: MSP
+        
         msp = extract_msp(brand_name, "")
         drug.update(msp)
 
@@ -66,8 +74,6 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
     upload_jsonl_to_blob(drug_records, "params_5_8_9.jsonl")
 
 
-
-
 if __name__ == "__main__":
-    get_noc_health_canada_and_pcpa_data(1, 2)
+    add_params_to_drug_records(1, 2)
 
