@@ -17,8 +17,6 @@ const HeaderWithMode: React.FC = () => {
 
     const mode = getHeaderMode();
 
-    if (mode === "none") return null;
-
     return <Header mode={mode} />;
 };
 
