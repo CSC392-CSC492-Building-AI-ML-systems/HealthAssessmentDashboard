@@ -61,7 +61,7 @@ const FeatureOverview: React.FC = () => {
             <div className="flex justify-center mt-8">
                 <button
                     onClick={handleGetStarted}
-                    className="bg-[var(--button-red)] text-[var(--feature-bg)] font-semibold px-6 py-3 rounded-full transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+                    className="bg-[var(--button-red)] text-[var(--button-clr)] font-semibold px-6 py-3 rounded-full transition-transform duration-300 hover:scale-105 hover:shadow-xl"
                 >
                     Get Started
                 </button>

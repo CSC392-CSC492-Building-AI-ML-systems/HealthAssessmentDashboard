@@ -8,8 +8,9 @@ import Toggle from "../theme/Toggle";
 import Login from "../LoginButton";
 import Chatbot from "../ChatbotButton";
 import SearchBar from "../SearchBar";
+import Topbar from "@/components/chatbot/Topbar";
 
-type HeaderMode = "full" | "logo-only" | "dashboard";
+type HeaderMode = "full" | "logo-only" | "dashboard" | "chatbot";
 
 interface HeaderProps {
     mode?: HeaderMode;
@@ -24,8 +25,14 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
             ? "/ourpaths-light.png"
             : "/ourpaths-dark.png";
 
+    // Use Topbar directly if in chatbot
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    if (mode === "chatbot") {
+        return <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+    }
+
     return (
-        <nav className="bg-[var(--background)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">
+        <nav className="bg-[var(--headerfooter)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">
 
             {/* Logo */}
             <div className="flex items-center space-x-2">
@@ -68,3 +75,4 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
 }
 
 export default Header;
+export type { HeaderMode };
