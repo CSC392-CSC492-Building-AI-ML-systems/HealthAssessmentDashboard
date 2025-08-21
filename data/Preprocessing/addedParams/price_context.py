@@ -137,8 +137,7 @@ def extract_price_recommendation_context(
     elif isinstance(price_recommendation, (int,float)):
         targets.append(float(price_recommendation))
 
-    targets = sorted(list({float(int(round(v)))} for v in targets))  # unique rounded ints
-    targets = [t if isinstance(t, float) else float(list(t)[0]) for t in targets]  # flatten
+    targets = sorted({float(int(round(v))) for v in targets})
 
     if not targets:
         return {
