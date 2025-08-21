@@ -26,7 +26,7 @@ def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
 
     # Load the FAISS index and metadata once
     try:
-        index, meta = load_embeddings()  # warm cache once
+        index, meta = load_embeddings()
     except Exception:
         index, meta = (None, None)
 
