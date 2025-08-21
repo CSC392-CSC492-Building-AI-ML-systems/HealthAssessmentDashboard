@@ -8,10 +8,10 @@ from app.rag_tools.intent_classifier.intent_classifier import intent_classifier
 from typing import List, Dict, Any, Optional, Tuple
 from app.models.enums import IntentEnum
 from app.services.agent_tools import (
-    retriever_service,
     price_rec_service,
     timeline_rec_service,
 )
+from app.rag_tools.vectordb_retriever import VectorDBRetriever
 # STEP 3 Imports
 from app.rag_tools.normalizer import normalize_tool_responses
 from app.rag_tools.llm_response_formatter import reformat
@@ -21,6 +21,7 @@ from app.rag_tools.llm_response_formatter import reformat
 class ChatbotService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.retriever = VectorDBRetriever()
 
     async def _get_user(self, user_id: int) -> User:
         """Helper to get and validate user existence."""
@@ -133,12 +134,6 @@ class ChatbotService:
             chat_history_id=session_id
         )
 
-        # Old code:
-        # bot_msg = ChatMessage(
-        #     role="ASSISTANT",
-        #     content=f"Bot received: '{message}'",
-        #     chat_history_id=session_id
-        # )
         self.db.add(bot_msg)
         await self.db.commit()
 
@@ -206,7 +201,7 @@ class ChatbotService:
 
         for intent in execution_plan:
             if intent == IntentEnum.VECTORDB:
-                metadata = retriever_service.retrieve(query)
+                metadata = self.retriever_service.retrieve(query, CDA_VECTORDB)
                 responses.append({"intent": intent, "response": metadata})
 
             elif intent == IntentEnum.PRICE_REC_SERVICE:
