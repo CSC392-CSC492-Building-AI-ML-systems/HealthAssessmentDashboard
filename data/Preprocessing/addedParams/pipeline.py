@@ -30,11 +30,15 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
 
         # COLLECT ALL DATA REQUIRED FROM THE pCPA DATABASE
         pcpa_engagement_letter_issued, negotiation_process_concluded = get_pcpa_data(brand_name, cda_project_number)
+        print("pCPA ENGAGEMENT LETTER ISSUED, NEGOTIATION PROCESS CONCLUDED")
+        print(pcpa_engagement_letter_issued, negotiation_process_concluded)
+        print(type(pcpa_engagement_letter_issued))
 
         # PARAM #5: Time from NOC to pCPA Engagement / Reimbursement Listing
         print("ORIGINAL DATE", original_noc_date)
         print("pcpa engagement letter issued", pcpa_engagement_letter_issued)
         time_from_noc_to_pcpa = calculate_time_difference(original_noc_date, pcpa_engagement_letter_issued)
+        print(time_from_noc_to_pcpa)
 
         # PARAM #8: Drug Type (Biologic, Rare Disease, Oncology, etc.)
         drug_type = classify_drug_type(
@@ -59,5 +63,5 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
 
 
 if __name__ == "__main__":
-    get_noc_health_canada_and_pcpa_data(1, 2)
+    get_noc_health_canada_and_pcpa_data(113, 114)
 

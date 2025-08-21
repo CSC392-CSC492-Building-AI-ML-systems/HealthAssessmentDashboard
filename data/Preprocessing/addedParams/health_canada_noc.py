@@ -73,6 +73,8 @@ def get_noc_row_data(product_name: str):
 
             all_rows = []
 
+            counter = 0
+
             while True:
                 print("LOOP")
 
@@ -85,6 +87,9 @@ def get_noc_row_data(product_name: str):
                     rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
                 except:
                     rows = []
+
+                selenium_screenshot(driver, f"NoC_entries_{counter}.png")
+                counter += 1
 
                 # print(rows)
 

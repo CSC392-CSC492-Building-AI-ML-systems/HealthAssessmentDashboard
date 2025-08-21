@@ -29,11 +29,16 @@ def calculate_time_difference(start_date, end_date):
     Both dates must be strings in 'YYYY-MM-DD' format.
     """
     if not start_date or not end_date:
-        return None  # Handle missing data gracefully
+        return None
+
+    if start_date == "N/A" or end_date == "N/A":
+        return None
 
     try:
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        print(start)
         end = datetime.strptime(end_date, "%Y-%m-%d").date()
+        print(end)
         return (end - start).days
     except ValueError:
         return None
