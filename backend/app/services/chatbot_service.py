@@ -13,7 +13,6 @@ from app.services.agent_tools import (
     timeline_rec_service,
 )
 # STEP 3 Imports
-import asyncio
 from app.rag_tools.normalizer import normalize_tool_responses
 from app.rag_tools.llm_response_formatter import reformat
 
@@ -116,11 +115,30 @@ class ChatbotService:
         # TODO: Implement actual bot response logic involves implementing the 
         # RAG pipeline and LLM response generation - OUR-45
 
+        # Current RAG pipeline attempt:
+        try:
+            # STEP 2
+            tool_responses = await self.call_tools(message)
+            # STEP 3.1: normalizer (passes the same user message as 'query')
+            data_dict, prediction = normalize_tool_responses(message, tool_responses)
+            # STEP 3.2: format final LLM answer
+            final_text = reformat(message, data_dict, prediction)
+        except Exception:
+            final_text = ("Sorry, I couldn’t generate a complete answer just now. "
+                        "Please try again in a moment.")
+
         bot_msg = ChatMessage(
             role="ASSISTANT",
-            content=f"Bot received: '{message}'",
+            content=final_text,
             chat_history_id=session_id
         )
+
+        # Old code:
+        # bot_msg = ChatMessage(
+        #     role="ASSISTANT",
+        #     content=f"Bot received: '{message}'",
+        #     chat_history_id=session_id
+        # )
         self.db.add(bot_msg)
         await self.db.commit()
 
