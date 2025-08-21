@@ -88,7 +88,7 @@ def _llm_disambiguate(drug_name: str, chunks: List[Dict]) -> Dict:
         loc = f"{c.get('source','?')}:p{c.get('page','?')}"
         ctx.append(f"[{loc}]\n{c.get('text','')}")
     prompt = f"""
-You extract the Manufacturer's Submitted Price from CADTH docs.
+You extract the Manufacturer's Submitted Price from Cda docs.
 Rules:
 - Prefer the explicit "Manufacturer's submitted price" or MSP list price.
 - Ignore recommended price reductions, post-rebate prices, and scenarios.
