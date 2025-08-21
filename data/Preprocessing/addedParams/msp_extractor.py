@@ -157,19 +157,19 @@ def extract_msp(drug_name: str, pdf_text: str = "") -> Dict:
 
     # Otherwise use retrieval + LLM
     chunks = _retrieve_context(drug_name, k_total=20)
-    for ch in chunks:
-        v, u, snip = _scan_for_msp(ch.get("text", ""))
-        if v is not None:
-            ref = f"{ch.get('source','?')}:p{ch.get('page','?')}"
-            return {
-                "Manufacturer Submitted Price": v,
-                "MSP Status": "numeric",
-                "MSP Currency": "CAD",
-                "MSP Source Refs": [ref],
-                "MSP Context Text": snip,
-                "MSP Unit Hint": u,
-                "MSP Match Type": "regex_retrieval"
-            }
+    # for ch in chunks:
+    #     v, u, snip = _scan_for_msp(ch.get("text", ""))
+    #     if v is not None:
+    #         ref = f"{ch.get('source','?')}:p{ch.get('page','?')}"
+    #         return {
+    #             "Manufacturer Submitted Price": v,
+    #             "MSP Status": "numeric",
+    #             "MSP Currency": "CAD",
+    #             "MSP Source Refs": [ref],
+    #             "MSP Context Text": snip,
+    #             "MSP Unit Hint": u,
+    #             "MSP Match Type": "regex_retrieval"
+    #         }
 
     llm = _llm_disambiguate(drug_name, chunks)
     if llm.get("status") == "found" and llm.get("msp_value_numeric") is not None:

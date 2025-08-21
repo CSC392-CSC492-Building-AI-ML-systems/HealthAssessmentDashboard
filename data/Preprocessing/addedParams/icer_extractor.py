@@ -209,24 +209,24 @@ def extract_icer(drug_name: str, pdf_text: str) -> Dict:
 
     # Step 2: retrieval and regex over top chunks
     chunks = retrieve_context(drug_name, k_total=20)
-    for ch in chunks:
-        vv, nn, snip = _scan_for_icer(ch.get("text", ""))
-        if nn in ("dominant", "dominated", "numeric"):
-            ref = f"{ch.get('source','?')}:p{ch.get('page','?')}"
-            return {
-                "icer_value_numeric": vv,
-                "icer_currency": "CAD",
-                "icer_unit": "cost_per_QALY",
-                "icer_year": None,
-                "icer_perspective": None,
-                "icer_population": None,
-                "icer_comparator": None,
-                "icer_note": nn,
-                "status": "found",
-                "source_page_refs": [ref],
-                "icer_context_text": snip,
-                "icer_match_type": "regex_retrieval"
-            }
+    # for ch in chunks:
+    #     vv, nn, snip = _scan_for_icer(ch.get("text", ""))
+    #     if nn in ("dominant", "dominated", "numeric"):
+    #         ref = f"{ch.get('source','?')}:p{ch.get('page','?')}"
+    #         return {
+    #             "icer_value_numeric": vv,
+    #             "icer_currency": "CAD",
+    #             "icer_unit": "cost_per_QALY",
+    #             "icer_year": None,
+    #             "icer_perspective": None,
+    #             "icer_population": None,
+    #             "icer_comparator": None,
+    #             "icer_note": nn,
+    #             "status": "found",
+    #             "source_page_refs": [ref],
+    #             "icer_context_text": snip,
+    #             "icer_match_type": "regex_retrieval"
+    #         }
 
     # Step 3: LLM disambiguation
     llm_res = llm_disambiguate(drug_name, chunks)
