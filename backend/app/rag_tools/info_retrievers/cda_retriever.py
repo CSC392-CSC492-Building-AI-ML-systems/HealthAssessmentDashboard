@@ -5,9 +5,8 @@ Implements a simple interface for extracting relevant information from the CDA v
 """
 
 import numpy as np
-import faiss
 from typing import List, Optional
-from .vectordb_retriever import BaseRetriever, RetrievalResult
+from .base_retriever import BaseRetriever, RetrievalResult
 
 # Import LangChain components, fall back to direct implementations
 try:

@@ -7,11 +7,11 @@ from sqlalchemy import select, update, delete
 from app.rag_tools.intent_classifier.intent_classifier import intent_classifier
 from typing import List, Dict, Any, Optional, Tuple
 from app.models.enums import IntentEnum
-from app.services.agent_tools import (
-    price_rec_service,
-    timeline_rec_service,
-)
-from app.rag_tools.vectordb_retriever import VectorDBRetriever
+# from app.services.agent_tools import (
+#     price_rec_service,
+#     timeline_rec_service,
+# )
+from app.rag_tools.info_retrievers.vectordb_retriever import VectorDBRetriever
 # STEP 3 Imports
 from app.rag_tools.normalizer import normalize_tool_responses
 from app.rag_tools.llm_response_formatter import reformat
