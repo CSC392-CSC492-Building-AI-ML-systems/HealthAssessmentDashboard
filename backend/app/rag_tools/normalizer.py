@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple
 import re
-from urllib.parse import urlparse
 
 # Country aliases for jurisdiction context
 _COUNTRY_ALIASES = {
@@ -26,8 +25,7 @@ def normalize_tool_responses(
     query: str, 
     responses: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
     """Normalize STEP-2 outputs into tuple of (data_dict, prediction) for the LLM response formatter.
-    Keeps <=6 snippets, <=8 deduped sources; copies easy structured facts, picks one prediction (price or timeline), sets jurisdiction=Canada (+province if detected).
-
+    
     data_dict fields:
         - "query": <str>,
         - "jurisdiction": {"country": <str|None>, "province"?: <str>, "city"?: <str>},  # province/city optional

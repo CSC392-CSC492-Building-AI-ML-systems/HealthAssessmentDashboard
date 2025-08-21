@@ -1,8 +1,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
-import os, textwrap, json
-from openai import OpenAI   
-import logging
+import os, textwrap, logging
+from openai import OpenAI    
 logger = logging.getLogger(__name__)        
 
 MODEL = "gpt-4o-mini"   # TBD if this is the right model
@@ -33,25 +32,6 @@ PRICING_RATIO_MAP = {
     "Italy": 0.93, "Netherlands": 0.91, "Germany": 0.90, "Norway": 0.84,
     "Belgium": 0.82, "Sweden": 0.78, "Australia": 0.71, "France": 0.69,
 }
-
-def _adjust_price_for_country(pred: Optional[Dict[str, Any]], country: Optional[str]):
-    if not pred or pred.get("type") != "price" or not country:
-        return None
-    ratio = PRICING_RATIO_MAP.get(country)
-    if ratio is None:
-        return None
-    v = pred.get("value") or {}
-    out = {"country": country, "ratio": ratio}
-    if isinstance(v.get("range_cad"), (list, tuple)) and len(v["range_cad"]) == 2:
-        lo, hi = v["range_cad"]
-        out["range_cad_adjusted"] = [round(lo * ratio, 2), round(hi * ratio, 2)]
-        if v.get("unit"): out["unit"] = v["unit"]
-    elif "point_cad" in v:
-        out["point_cad_adjusted"] = round(v["point_cad"] * ratio, 2)
-        if v.get("unit"): out["unit"] = v["unit"]
-    else:
-        return None
-    return out
 
 def reformat(
     user_query: str,
@@ -87,15 +67,6 @@ def reformat(
     snippets_block = _format_snippets(data_dict.get("snippets") or [])
     prediction_block = _format_prediction(prediction)
 
-    country = (data_dict.get("jurisdiction") or {}).get("country")
-    intl_adj = _adjust_price_for_country(prediction, country)
-    ratios_block = ""
-    if intl_adj:
-        ratios_block = (
-            f"International ratio: {intl_adj['country']} → "
-            f"{PRICING_RATIO_MAP[intl_adj['country']]} (relative to Canada=1.00). "
-            "Adjusted CAD values precomputed below."
-        )
 
     user_block = textwrap.dedent(f"""
     User Query:
@@ -110,23 +81,28 @@ def reformat(
     Prediction (if any):
     {prediction_block or "None."}
 
-    International pricing (if applicable):
-    {ratios_block or "None."}
-    Precomputed adjustment:
-    {json.dumps(intl_adj) if intl_adj else "None."}
-
-    Please respond using exactly the required 4-part layout and avoid markdown tables.
+    Instructions:
+    - Please respond using exactly the required 4-part layout and avoid markdown tables.
+    - Use the ratio table (if present in the system prompt) to compute the target-country price from Canadian estimates.
+    - Show the calculation and round to 2 decimals.
+    - If no price is available, state that clearly; do not fabricate numbers.
     """).strip()
 
+    # System message (append a targeted ratio section if a country is present)
+    country = (data_dict.get("jurisdiction") or {}).get("country")
+    system_prompt = SYSTEM_PROMPT
+    ratio_section = _ratio_prompt(country)
+    if ratio_section:
+        system_prompt = SYSTEM_PROMPT + "\n\n" + ratio_section
 
-    # Single model call
+    # Model call
     try:
         resp = client.chat.completions.create(
             model=model,
             temperature=temperature,
             max_tokens=max_output_tokens,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_block},
             ],
         )
@@ -148,6 +124,31 @@ def reformat(
     return text
 
 # ---- helper functions
+
+def _ratio_prompt(country: Optional[str]) -> str:
+    """Render a small ratio section for the detected country (and Canada=1.00)."""
+    if not country:
+        return ""
+    ratio = PRICING_RATIO_MAP.get(country)
+    if ratio is None:
+        return ""
+    lines = [
+        "International Price Ratio (relative to Canada = 1.00):",
+        f"- {country}: {ratio}",
+    ]
+    if country != "Canada":
+        lines.append("- Canada: 1.00")
+    lines.append(
+    """ Ratio instructions:
+    - If a Canadian price estimate is available (from prediction or snippets), compute the target-country estimate as: Canadian_value × country_ratio.
+    - Preserve units (e.g., "per 120 mg vial").
+    - Show the calculation briefly (e.g., "3,200 × 0.90 = 2,880").
+    - Round monetary values to 2 decimals.
+    - If multiple figures are given (e.g., a range), apply the ratio to each bound.
+    - If Canada is the target, the ratio is 1.00 (no change).
+    """.strip()
+        )
+    return "\n".join(lines)
 
 def _format_snippets(snippets: List[Any]) -> str:
     """List[{text}] -> bullet lines. Assumes ≤6 items from normalizer."""
