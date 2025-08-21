@@ -1,36 +1,7 @@
+# data/Preprocessing/addedParams/comparator_price.py
 from typing import List, Dict, Optional
+from data.Preprocessing.embeddings_utils import retrieve_top_k
 
-def _primary_class(val) -> Optional[str]:
-    if isinstance(val, list) and val:
-        return str(val[0]).strip()
-    if isinstance(val, str):
-        return val.strip()
-    return None
-
-def _class_contains(neighbor_cls, primary: Optional[str]) -> bool:
-    if not primary:
-        return False
-    p = primary.lower()
-    if isinstance(neighbor_cls, list):
-        return any(isinstance(x, str) and p in x.lower() for x in neighbor_cls)
-    if isinstance(neighbor_cls, str):
-        return p in neighbor_cls.lower()
-    return False
-
-def _brand_map(records: List[Dict]) -> Dict[str, Dict]:
-    out = {}
-    for r in records:
-        name = str(r.get("Brand Name", "")).strip().lower()
-        if name and name not in out:
-            out[name] = r
-    return out
-
-def _query_text(drug: Dict) -> str:
-    return (
-        drug.get("Use Case / Indication")
-        or drug.get("Brand Name")
-        or ""
-    )
 
 def compute_comparator_price(
     drug: Dict,
@@ -43,13 +14,17 @@ def compute_comparator_price(
 ) -> Dict:
     """
     Param 4: Domestic Comparator Pricing
-    - Filter neighbors by same Therapeutic Class (first entry if list)
-    - Rank by similarity using FAISS over indication text
-    - Average neighbor MSPs
-    - Ratio = target MSP / comparator average
+      - Find neighbors in the same Therapeutic Class
+      - Rank by similarity using FAISS on indication text
+      - Average neighbor MSPs
+      - Ratio = target MSP / comparator average
     """
-    # Target MSP
-    target_msp = drug.get("Manufacturer Submitted Price")
+
+    # 1) target MSP
+    try:
+        target_msp = float(drug.get("Manufacturer Submitted Price"))
+    except Exception:
+        target_msp = None
     if target_msp is None:
         return {
             "Comparator Price": None,
@@ -58,17 +33,23 @@ def compute_comparator_price(
             "Comparator Notes": "target_missing_msp",
         }
 
-    # Class filter
-    primary_cls = _primary_class(drug.get("Therapeutic Class"))
-    if not primary_cls:
+    # 2) primary therapeutic class
+    tc = drug.get("Therapeutic Class")
+    primary_class: Optional[str] = None
+    if isinstance(tc, list) and tc:
+        primary_class = str(tc[0]).strip()
+    elif isinstance(tc, str) and tc.strip():
+        primary_class = tc.strip()
+    if not primary_class:
         return {
             "Comparator Price": None,
             "Comparator Ratio": None,
             "Comparator Neighbor IDs": [],
             "Comparator Notes": "no_primary_class",
         }
+    primary_class = primary_class.lower()
 
-    # FAISS must be available
+    # 3) index ready
     if not index or not meta:
         return {
             "Comparator Price": None,
@@ -77,49 +58,61 @@ def compute_comparator_price(
             "Comparator Notes": "no_index",
         }
 
-    # Retrieve top chunks by indication text
-    try:
-        from data.Preprocessing.embeddings_utils import retrieve_top_k
-    except Exception:
-        return {
-            "Comparator Price": None,
-            "Comparator Ratio": None,
-            "Comparator Neighbor IDs": [],
-            "Comparator Notes": "no_retrieve_fn",
-        }
-
-    query = _query_text(drug)
+    # 4) query text and retrieve similar chunks
+    query = drug.get("Use Case / Indication") or drug.get("Brand Name") or ""
     hits = retrieve_top_k(index, meta, query, k=k_hits)
 
-    # Map chunks back to distinct neighbor drugs
-    brand_by_name = _brand_map(all_records)
-    neighbors = []
-    seen_ids = set()
+    # 5) quick brand lookup
+    brand_map: Dict[str, Dict] = {}
+    for r in all_records:
+        name = str(r.get("Brand Name", "")).strip().lower()
+        if name and name not in brand_map:
+            brand_map[name] = r
+
+    # 6) collect neighbors
+    neighbors: List[Dict] = []
+    seen_pids = set()
     self_pid = drug.get("Project ID")
 
     for h in hits:
-        name = str(h.get("drug_name") or "").strip().lower()
-        if not name:
+        brand = str(h.get("drug_name") or "").strip().lower()
+        if not brand:
             continue
-        rec = brand_by_name.get(name)
+
+        rec = brand_map.get(brand)
         if not rec:
             continue
-        if rec.get("Project ID") == self_pid:
-            continue
-        if not _class_contains(rec.get("Therapeutic Class"), primary_cls):
-            continue
-        msp = rec.get("Manufacturer Submitted Price")
-        if msp is None:
-            continue
+
         pid = rec.get("Project ID")
-        if pid in seen_ids:
+        if not pid or pid == self_pid or pid in seen_pids:
             continue
-        seen_ids.add(pid)
+
+        # same class check
+        n_cls = rec.get("Therapeutic Class")
+        if isinstance(n_cls, list):
+            n_text = " | ".join(str(x) for x in n_cls if isinstance(x, str)).lower()
+        elif isinstance(n_cls, str):
+            n_text = n_cls.lower()
+        else:
+            n_text = ""
+
+        if not n_text or primary_class not in n_text:
+            continue
+
+        # neighbor MSP must exist
+        try:
+            msp_val = float(rec.get("Manufacturer Submitted Price"))
+        except Exception:
+            msp_val = None
+        if msp_val is None:
+            continue
+
         neighbors.append(rec)
+        seen_pids.add(pid)
         if len(neighbors) >= top_n:
             break
 
-    # Compute outputs
+    # 7) compute comparator average and ratio
     if len(neighbors) < min_neighbors:
         return {
             "Comparator Price": None,
@@ -128,7 +121,11 @@ def compute_comparator_price(
             "Comparator Notes": "neighbors_missing_msp",
         }
 
-    comp_price = sum(n.get("Manufacturer Submitted Price") for n in neighbors) / len(neighbors)
+    total = 0.0
+    for n in neighbors:
+        total += float(n.get("Manufacturer Submitted Price"))
+
+    comp_price = total / len(neighbors) if neighbors else None
     ratio = (target_msp / comp_price) if comp_price else None
 
     return {
