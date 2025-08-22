@@ -15,6 +15,13 @@ BACKEND_PATH = PROJECT_ROOT / "backend"
 if str(BACKEND_PATH) not in sys.path:
     sys.path.append(str(BACKEND_PATH))
 
+import types, openai, azure.storage.blob, faiss, pickle
+
+openai.OpenAI = lambda *a, **k: types.SimpleNamespace()
+azure.storage.blob.BlobServiceClient = types.SimpleNamespace(from_connection_string=lambda *a, **k: types.SimpleNamespace(get_container_client=lambda *a, **k: types.SimpleNamespace(get_blob_client=lambda *a, **k: types.SimpleNamespace(download_blob=lambda *a, **k: types.SimpleNamespace(readall=lambda: b"")), list_blobs=lambda *a, **k: [])))
+faiss.read_index = lambda *a, **k: faiss.IndexFlatL2(1536)
+pickle.load = lambda *a, **k: []
+
 from app.db.sqlite import get_db
 from app.models.base import Base
 from app.routers.auth import router as auth_router

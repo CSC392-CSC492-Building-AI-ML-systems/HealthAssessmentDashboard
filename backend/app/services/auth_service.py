@@ -8,6 +8,7 @@ from sqlalchemy import select
 from fastapi import HTTPException, status, Depends, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dataclasses import dataclass
+from fastapi.security import OAuth2PasswordBearer
 
 from app.models.user import User
 from app.schemas.user import UserCreate
@@ -36,6 +37,8 @@ class TokenPair:
     """Pair of access and refresh tokens"""
     access_token: str
     refresh_token: str
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 class AuthService:
     def __init__(self, db: AsyncSession, config: Optional[TokenConfig] = None):
@@ -151,7 +154,7 @@ class AuthService:
             return user_id
         except (JWTError, ValueError, TypeError):
             return None
-
+          
 # Dependency to get the current user from JWT token
 security = HTTPBearer()
 
