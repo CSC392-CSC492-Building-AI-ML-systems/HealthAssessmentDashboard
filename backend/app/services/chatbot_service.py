@@ -15,7 +15,14 @@ from app.rag_tools.info_retrievers.vectordb_retriever import VectorDBRetriever
 # STEP 3 Imports
 from app.rag_tools.normalizer import normalize_tool_responses
 from app.rag_tools.llm_response_formatter import reformat
+from app.core.config import settings
+from jose import JWTError, jwt
+from app.models.enums import DatabaseEnum
 
+
+# Configure JWT
+SECRET_KEY = settings.jwt_secret_key
+ALGORITHM = "HS256"
 
 
 class ChatbotService:
@@ -43,6 +50,11 @@ class ChatbotService:
         if not session:
             raise ValueError("Session not found")
         return session
+
+    async def _get_database(self) -> DatabaseEnum:
+        # NOT IMPLEMENTED
+        # FOR NOW, SINCE WE CAN'T CLASSIFY BETWEEN USER AND CDA VECTORDB, JUST GET THE CDA VECTORDB
+        return DatabaseEnum.CDA_VECTORDB
 
     async def create_chat(self, user_id: int, title: str):
         """Create a new chat session for a user"""
@@ -100,6 +112,16 @@ class ChatbotService:
         await self.db.commit()
         return result.rowcount > 0
 
+    async def verify_token(self, token: str, token_type: str) -> Optional[int]:
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            if payload.get("type") != token_type:
+                return None
+            user_id = int(payload.get("sub"))
+            return user_id
+        except JWTError:
+            return None
+
     async def send_message(self, session_id: int, user_id: int, message: str):
         """Send a message in a chat session and return the bot's response"""
         # Validate both user and session exist
@@ -120,8 +142,11 @@ class ChatbotService:
         try:
             # STEP 2
             tool_responses = await self.call_tools(message)
+            print("TOOL RESPONSES")
+            print(tool_responses)
             # STEP 3.1: normalizer (passes the same user message as 'query')
             data_dict, prediction = normalize_tool_responses(message, tool_responses)
+            print("RETURNED DATA_DICT", data_dict)
             # STEP 3.2: format final LLM answer
             final_text = reformat(message, data_dict, prediction)
         except Exception:
@@ -184,7 +209,9 @@ class ChatbotService:
             }
         """
         # 1) Classify the query.
+        print("Getting intents")
         intents = intent_classifier(query)
+        print("Got intents", intents)
         if not intents:
             return []
 
@@ -201,18 +228,27 @@ class ChatbotService:
 
         for intent in execution_plan:
             if intent == IntentEnum.VECTORDB:
-                metadata = self.retriever_service.retrieve(query, CDA_VECTORDB)
+                print("GETTING METADATA")
+
+                # GET CORRECT VECTORDB
+                database_enum = await self._get_database()
+
+                specified_retriever = await self.retriever.get_retriever(database_enum)
+
+                metadata = specified_retriever.retrieve(query)
+                print("METADATA: ", metadata)
                 responses.append({"intent": intent, "response": metadata})
-
-            elif intent == IntentEnum.PRICE_REC_SERVICE:
-                # Metadata from the USER vector-DB
-                meta_data = metadata or {}
-                # TODO: Structure the metadata into the structure expected by the ML model.
-                prediction = price_rec_service.predict({"metadata": meta_data})
-                responses.append({"intent": intent, "response": prediction})
-
-            elif intent == IntentEnum.TIMELINE_REC_SERVICE:
-                timeline_data = timeline_rec_service.query(query)
-                responses.append({"intent": intent, "response": timeline_data})
+            #
+            # elif intent == IntentEnum.PRICE_REC_SERVICE:
+            #     # Metadata from the USER vector-DB
+            #     meta_data = metadata or {}
+            #     # TODO: Structure the metadata into the structure expected by the ML model.
+            #     prediction = price_rec_service.predict({"metadata": meta_data})
+            #     responses.append({"intent": intent, "response": prediction})
+            #
+            # elif intent == IntentEnum.TIMELINE_REC_SERVICE:
+            #     timeline_data = timeline_rec_service.query(query)
+            #     responses.append({"intent": intent, "response": timeline_data})
 
         return responses
+

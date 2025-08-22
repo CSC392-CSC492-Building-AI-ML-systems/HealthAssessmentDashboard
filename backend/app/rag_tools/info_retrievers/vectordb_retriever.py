@@ -21,7 +21,8 @@ class VectorDBRetriever:
     _retrievers: Dict[DatabaseEnum, BaseRetriever] = {}
 
     @classmethod
-    def get_retriever(cls, database: DatabaseEnum) -> BaseRetriever:
+    async def get_retriever(cls, database: DatabaseEnum) -> BaseRetriever:
+        print("GETTING RETRIEVER")
         if database not in cls._retrievers:
             if database == DatabaseEnum.CDA_VECTORDB:
                 cls._retrievers[database] = CDARetriever()

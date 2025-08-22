@@ -24,7 +24,12 @@ Output layout (exact order):
     1) Direct answer (1–3 sentences).
     2) Key details (bullets).
     3) Caveats/assumptions if applicable (1–3 bullets; include uncertainty and non-advice disclaimer).
-    4) Sources (only if provided). Omit if none provided.
+    4) Sources  
+    • Always check the evidence for any line beginning with "SOURCE:".  
+    • If such a line exists, output everything that appears AFTER "SOURCE:" exactly as written (do not repeat the word "SOURCE:").  
+    • If multiple "SOURCE:" lines exist, output each one on its own line.  
+    • If no "SOURCE:" lines exist in the evidence, output "None".  
+
 """
 
 PRICING_RATIO_MAP = {
@@ -87,6 +92,7 @@ def reformat(
     - Show the calculation and round to 2 decimals.
     - If no price is available, state that clearly; do not fabricate numbers.
     """).strip()
+    print("USER BLOCK", user_block)
 
     # System message (append a targeted ratio section if a country is present)
     country = (data_dict.get("jurisdiction") or {}).get("country")
@@ -121,6 +127,8 @@ def reformat(
 
     text = text.strip()
 
+    print("FINAL RESULT", text)
+
     return text
 
 # ---- helper functions
@@ -154,12 +162,14 @@ def _format_snippets(snippets: List[Any]) -> str:
     """List[{text}] -> bullet lines. Assumes ≤6 items from normalizer."""
     lines: List[str] = []
     for item in snippets:
+        print("ITEM: ", item)
         txt = (item.get("text") if isinstance(item, dict) else str(item)) or ""
         txt = " ".join(txt.split())
-        if len(txt) > 400:
-            txt = txt[:400] + "…"
+        src = (item.get("source") if isinstance(item, dict) else None) or None
+        # if len(txt) > 400:
+        #     txt = txt[:400] + "…"
         if txt:
-            lines.append(f"- {txt}")
+            lines.append(f"- SOURCE: {src}, TEXT: {txt}")
     return "\n".join(lines)
 
 def _format_prediction(pred: Optional[Dict[str, Any]]) -> str:

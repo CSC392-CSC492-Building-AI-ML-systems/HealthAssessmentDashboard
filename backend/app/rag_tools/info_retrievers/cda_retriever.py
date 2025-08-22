@@ -3,7 +3,7 @@
 Minimal CDA (Canadian Drug Agency) Vector Database Retriever.
 Implements a simple interface for extracting relevant information from the CDA vector database.
 """
-
+import faiss
 import numpy as np
 from typing import List, Optional
 from .base_retriever import BaseRetriever, RetrievalResult
@@ -18,12 +18,8 @@ except ImportError:
     OpenAIEmbeddings = None
     LANGCHAIN_AVAILABLE = False
 
-try:
-    from data.Preprocessing.Data.azure_blob_store import load_embeddings
-    from data.Preprocessing.config import EMBEDDING_MODEL
-except ImportError as e:
-    load_embeddings = None
-    EMBEDDING_MODEL = "text-embedding-3-small"
+from app.rag_tools.info_retrievers.utils import load_embeddings
+from app.rag_tools.info_retrievers.config import EMBEDDING_MODEL
 
 try:
     from openai import OpenAI
@@ -48,14 +44,20 @@ class CDARetriever(BaseRetriever):
         if self._index_loaded:
             return
         try:
+            print("LOADING INDEX")
             if load_embeddings is None:
+                print("LANG AVAILABLE", LANGCHAIN_AVAILABLE)
+                print(FAISS, OpenAIEmbeddings)
                 if LANGCHAIN_AVAILABLE:
                     self._vectorstore = None
                 else:
+                    print("USING FAISS")
                     self._index = faiss.IndexFlatL2(1536)  # Default dimension
                 self._metadata = []
             else:
+                print("LOADING EMBEDDINGS")
                 faiss_index, metadata = load_embeddings()
+
                 if LANGCHAIN_AVAILABLE and FAISS is not None:
                     # Use LangChain FAISS wrapper
                     embeddings = OpenAIEmbeddings(model=self.embedding_model)
@@ -67,6 +69,8 @@ class CDARetriever(BaseRetriever):
                     )
                 else:
                     # Use direct FAISS
+                    print("NTOTAL")
+                    print(faiss_index.ntotal)
                     self._index = faiss_index
                 self._metadata = metadata
             self._index_loaded = True
@@ -78,11 +82,15 @@ class CDARetriever(BaseRetriever):
             self._metadata = []
             self._index_loaded = True
 
-    def retrieve(self, query: str, top_k: int = 10) -> List[RetrievalResult]:
+    def retrieve(self, query: str, top_k: int = 3) -> List[RetrievalResult]:
         """
         Retrieve relevant information from the CDA vector database given a user query.
         """
+        print("CDA RETRIEVER RETRIEVING")
         self._ensure_index_loaded()
+        print("INDEX LOADED")
+        print(self._index)
+        print(self._index.ntotal)
         if not query.strip():
             return []
 
@@ -105,6 +113,7 @@ class CDARetriever(BaseRetriever):
             # FAISS implementation
             elif self._index is not None and self._index.ntotal > 0:
                 # Query embedding
+                print("SEARCHING WITH FAISS")
                 query_embedding = self._get_embedding(query)
                 if query_embedding is None:
                     return []
@@ -132,6 +141,7 @@ class CDARetriever(BaseRetriever):
                 return results
             
             else:
+                print("FAILED")
                 return []
                 
         except Exception as e:

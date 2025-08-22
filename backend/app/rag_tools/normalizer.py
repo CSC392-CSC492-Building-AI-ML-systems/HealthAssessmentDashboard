@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple
+from app.models.enums import IntentEnum
 import re
+from app.rag_tools.info_retrievers.base_retriever import RetrievalResult
 
 # Country aliases for jurisdiction context
 _COUNTRY_ALIASES = {
@@ -47,6 +49,8 @@ def normalize_tool_responses(
 
     # Jurisdiction from query, regex-first
     jur = _fallback_jurisdiction(query)
+    print("JURISDICTION")
+    print(jur)
 
     # Gather snippets + (optional) prediction from tool outputs
     snippets: List[Dict[str, Any]] = []
@@ -57,16 +61,26 @@ def normalize_tool_responses(
         payload = item.get("response")
 
         # Retriever outputs: list of dataclass objects (RetrievalResult) OR dicts
-        if intent in {"VECTORDB", "USER_VECTORDB", "CDA_VECTORDB"}:
+        if intent == IntentEnum.VECTORDB:
+            print("NORMALIZING VECTORDB")
+            print(type(payload[0]))
+            print("Number of payloads", len(payload))
+            print("FIRST PAYLOAD")
+            print(payload[0])
+
             hits = payload if isinstance(payload, list) else []
             for h in hits:
                 # Support dataclass or dict
                 text = getattr(h, "text", None)
+                print(text)
                 if text is None and isinstance(h, dict):
                     text = h.get("text") or (h.get("metadata") or {}).get("text")
                 text = (text or "").strip()
                 if not text:
                     continue
+
+                metadata = getattr(h, "metadata", None)
+                source = metadata["source"]
 
                 score = getattr(h, "score", None)
                 if score is None and isinstance(h, dict):
@@ -76,18 +90,19 @@ def normalize_tool_responses(
                 if rank is None and isinstance(h, dict):
                     rank = h.get("rank")
 
-                one = {"text": _clean(text)}
+                one = {"text": text}
                 if score is not None: one["score"] = score
-                if rank  is not None: one["rank"]  = rank
+                if rank is not None: one["rank"]  = rank
+                if source is not None: one["source"] = source
                 snippets.append(one)
 
-                if len(snippets) >= MAX_SNIPPETS:
-                    break
+                # if len(snippets) >= MAX_SNIPPETS:
+                #     break
 
-        elif intent == "PRICE_REC_SERVICE" and isinstance(payload, dict):
+        elif intent == IntentEnum.PRICE_REC_SERVICE and isinstance(payload, dict):
             prediction = _norm_price(payload)
 
-        elif intent == "TIMELINE_REC_SERVICE" and isinstance(payload, dict):
+        elif intent == IntentEnum.TIMELINE_REC_SERVICE and isinstance(payload, dict):
             # Prefer price if both are present (should not happen!)
             if not prediction or prediction.get("type") != "price":
                 prediction = _norm_timeline(payload)
@@ -97,6 +112,9 @@ def normalize_tool_responses(
         "jurisdiction": jur or {"country": None},
         "snippets": snippets[:MAX_SNIPPETS],
     }
+    # print("DATA DICT", data_dict)
+    # print("FIRST SNIPPET", snippets[0])
+    # print("LENGTH", len(snippets))
     return data_dict, prediction
 
 
@@ -128,7 +146,7 @@ def _as_name(v: Any) -> str:
     return getattr(v, "name", str(v))
 
 # Whitespace/length normalizer: keeps snippets/titles compact (to control+reduce token cost).
-def _clean(s: Any, limit: int = 400) -> str:
+def _clean(s: Any, limit: int = 1000) -> str:
     t = str(s or "").strip()
     t = re.sub(r"\s+", " ", t)
     return (t[:limit] + "…") if len(t) > limit else t

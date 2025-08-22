@@ -12,6 +12,7 @@ co = cohere.Client(os.getenv("COHERE_API_KEY"))
 _MODEL_ID = os.getenv("INTENT_CLASSIFIER_MODEL_ID")
 
 def intent_classifier(query: str) -> List[IntentEnum]:
+    print("INTENT CLASSIFIER")
     if not query or not query.strip():
         return []
     try:
@@ -20,6 +21,7 @@ def intent_classifier(query: str) -> List[IntentEnum]:
             model=_MODEL_ID,
             inputs=[query.strip()]
         )
+        print("CLASSIFICATION: ", response)
     except Exception as e:
         raise RuntimeError(f"Cohere classify failed: {e}") from e
 
@@ -28,6 +30,16 @@ def intent_classifier(query: str) -> List[IntentEnum]:
         return []
 
     # Get the top prediction from the response
-    top = response.classifications[0].prediction
+    classification = response.classifications[0]
+    threshold = 0.5
+
+    labels = classification.labels
     allowed = {e.value for e in IntentEnum}
-    return [IntentEnum(top)] if isinstance(top, str) and top in allowed else []
+
+    filtered_labels = [
+        IntentEnum(label)
+        for label, val in labels.items()
+        if val.confidence >= threshold and label in allowed
+    ]
+
+    return filtered_labels
