@@ -56,7 +56,7 @@ def extract_all_health_canada_entry_fields(dins: list[str]):
                 return {}
             except:
                 print("Valid DIN")
-
+                
                 # SOME ENTRIES (i.e. Dupixent) HAVE MULTIPLE DRUG ENTRIES WITH THE SAME DIN
                 try:
                     table = WebDriverWait(driver, 10).until(

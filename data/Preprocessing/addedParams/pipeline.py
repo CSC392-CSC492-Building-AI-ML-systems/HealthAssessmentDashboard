@@ -1,12 +1,17 @@
-from data.Preprocessing.Data.azure_blob_store import download_jsonl_from_blob
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+
+from data.Preprocessing.Data.azure_blob_store import download_jsonl_from_blob, upload_jsonl_to_blob
 from health_canada_noc import get_noc_data
 from health_canada_drug import get_health_canada_data
 from pcpa import get_pcpa_data
+from data.Preprocessing.addedParams.icer_extractor import extract_icer
 from data.Preprocessing.addedParams.utils import classify_drug_type, calculate_time_difference
-from data.Preprocessing.Data.azure_blob_store import upload_jsonl_to_blob
+from data.Preprocessing.addedParams.msp_extractor import extract_msp
+from data.Preprocessing.Data.azure_blob_store import load_embeddings
+from data.Preprocessing.addedParams.price_context import extract_price_recommendation_context
 
-
-def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = None):
+def add_params_to_drug_records(start_index: int = 0, end_index: int = None):
     """Get all data that is useful from the three sources, which are the following parameters for
     prediction model training:
 
@@ -18,9 +23,25 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
 
     drug_records = drug_records[start_index:end_index]
 
+    # Load the FAISS index and metadata once
+    try:
+        index, meta = load_embeddings()
+    except Exception:
+        index, meta = (None, None)
+        
     for drug in drug_records:
         brand_name = drug["Brand Name"]
         cda_project_number = drug["Project ID"]
+
+        # Add price recommendation context
+        price_ctx = extract_price_recommendation_context(drug["Brand Name"], drug.get("Price Recommendation"))
+        print("price_tcx", price_ctx)
+        drug.update(price_ctx)
+
+        # PARAM #2: ICER/QALY
+        icer = extract_icer(brand_name, "")
+        print("icer", icer)
+        drug.update(icer)
 
         # COLLECT ALL DATA REQUIRED FROM NOC DATABASE
         dins, original_noc_date, therapeutic_class, submission_class = get_noc_data(brand_name)
@@ -30,15 +51,16 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
 
         # COLLECT ALL DATA REQUIRED FROM THE pCPA DATABASE
         pcpa_engagement_letter_issued, negotiation_process_concluded = get_pcpa_data(brand_name, cda_project_number)
-        print("pCPA ENGAGEMENT LETTER ISSUED, NEGOTIATION PROCESS CONCLUDED")
-        print(pcpa_engagement_letter_issued, negotiation_process_concluded)
-        print(type(pcpa_engagement_letter_issued))
 
         # PARAM #5: Time from NOC to pCPA Engagement / Reimbursement Listing
         print("ORIGINAL DATE", original_noc_date)
         print("pcpa engagement letter issued", pcpa_engagement_letter_issued)
         time_from_noc_to_pcpa = calculate_time_difference(original_noc_date, pcpa_engagement_letter_issued)
-        print(time_from_noc_to_pcpa)
+
+        
+        msp = extract_msp(brand_name, "")
+        print("msp", msp)
+        drug.update(msp)
 
         # PARAM #8: Drug Type (Biologic, Rare Disease, Oncology, etc.)
         drug_type = classify_drug_type(
@@ -48,6 +70,7 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
             indication_text=drug["Use Case / Indication"],
             noc_pathway=submission_class
         )
+
         # ALSO INCLUDE therapeutic_class TO HELP
         # (THIS IS EQUIVALENT TO CALCULATING USING ATC TABLE, AND IS MORE SPECIFIC THAN THE EXISTING Therapeutic Area)
 
@@ -59,9 +82,16 @@ def get_noc_health_canada_and_pcpa_data(start_index: int = 0, end_index: int = N
         drug["Therapeutic Class"] = therapeutic_class
         drug["Submission Pathway"] = submission_class
 
+    # Pass 2: Comparator Price
+    for drug in drug_records:
+        comparator_price = compute_comparator_price(drug, drug_records, index, meta)
+        print("comparator_price", comparator_price)
+        drug.update(comparator_price)
+
+
     upload_jsonl_to_blob(drug_records, "params_5_8_9.jsonl")
 
 
 if __name__ == "__main__":
-    get_noc_health_canada_and_pcpa_data(113, 114)
+    add_params_to_drug_records(113, 114)
 

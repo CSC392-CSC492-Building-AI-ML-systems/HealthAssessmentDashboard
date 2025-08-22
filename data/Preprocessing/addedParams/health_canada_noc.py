@@ -90,7 +90,6 @@ def get_noc_row_data(product_name: str):
 
                 selenium_screenshot(driver, f"NoC_entries_{counter}.png")
                 counter += 1
-
                 # print(rows)
 
                 # total_height = driver.execute_script("return document.body.scrollHeight")
