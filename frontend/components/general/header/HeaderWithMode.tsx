@@ -1,20 +1,23 @@
 "use client";
 
 import { usePathname } from 'next/navigation';
-import Header from './Header';
+import Header, { HeaderMode } from './Header';
 
 const HeaderWithMode: React.FC = () => {
-    // SET THE CORRECT HEADER BASED ON THE PATHNAME
     const pathname = usePathname();
 
     const getHeaderMode = () => {
-        if (pathname === "/landing" || pathname === "/contact" || pathname === "/about") return "full";
+        if (pathname === "/landing" || pathname === "/contact" || pathname === "/about")
+             return "full";
+        else if (pathname.startsWith("/dashboard")) 
+            return "dashboard"
+        else if (pathname === "/chatbot") return "chatbot";
         return "logo-only";
     };
 
-    return (
-        <Header mode={getHeaderMode()} />
-    )
-}
+    const mode = getHeaderMode();
+
+    return <Header mode={mode} />;
+};
 
 export default HeaderWithMode;

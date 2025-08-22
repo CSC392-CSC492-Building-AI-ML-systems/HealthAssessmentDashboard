@@ -3,9 +3,14 @@
 import { ThemeProvider } from "next-themes";
 
 export function LightDarkProvider ( {children}: {children: React.ReactNode}){
+        // return (
+        // <ThemeProvider enableSystem={true} attribute="class">
+        //     {children}
+        // </ThemeProvider>
+        // );
         return (
-        <ThemeProvider enableSystem={true} attribute="class">
-            {children}
-        </ThemeProvider>
-        );
+            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+              {children}
+            </ThemeProvider>
+          );
     }

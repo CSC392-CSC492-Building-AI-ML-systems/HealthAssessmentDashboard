@@ -1,8 +1,9 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List
 
 class UserPreferencesBase(BaseModel):
     news_preferences: Optional[str] = None
+    therapeutic_areas: Optional[List[str]] = None
 
 class UserPreferencesCreate(UserPreferencesBase):
     pass

@@ -7,9 +7,10 @@ body {
   overflow-x: hidden;
 }
 
+
 /* for light mode */
 :root {
-  --background: #ccc9dc;
+  --background: #F8F8F8;
   --foreground: #0c1821;
 
   /* Branding colors */
@@ -17,10 +18,18 @@ body {
   --brand-light: #CCC9DC;
   --button-red: #7E111A;
   --text-light: #0C1821;
-  --feature-bg: #EDEDED;
+  --feature-bg: #0C1821;
   --text-onhover-red: #7E111A;
+  --hover-bg: #CCC9DC; 
+  --hover-box: #CCC9DC;
   --button-onhover-red: #5A0C13;
+  --button-clr:#e9e9ee;
   --gradient-color: #FFFFFF;
+  --input-bg: #ffffff;
+  --input-text: #0c1821;
+  --main-body: #e9e9ee;
+  --headerfooter: #ccc9dc;
+  --bars:#F4F4F4;
 
 
 
@@ -29,14 +38,24 @@ body {
   --font-display: var(--font-outfit);
 }
 
+
 /* for dark mode */
 .dark {
   --background: #0C1821;
   --foreground: #CCC9DC;
-  --text-light: #EDEDED;
+  --text-light: #e9e9ee;
   --text-onhover-red: #B8333C;
   --button-onhover-red: #5A0C13;
+  --button-clr:#e9e9ee;
+  --hover-bg: #324A5F; 
+  --hover-box: #19293b;
   --gradient-color: #262626;
+  --input-bg: #1f2937;
+  --input-text: #f4f4f4;
+  --main-body: #121e2b;
+  --headerfooter: #0C1821;
+  --bars:#0C1821;
+  --feature-bg: #EDEDED;
 
 }
 
@@ -52,7 +71,6 @@ body {
   0% {
     transform: translateX(0%);
   }
-
   100% {
     transform: translateX(-100%);
   }
