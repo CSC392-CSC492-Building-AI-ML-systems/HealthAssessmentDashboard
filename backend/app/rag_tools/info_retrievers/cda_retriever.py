@@ -3,6 +3,7 @@
 Minimal CDA (Canadian Drug Agency) Vector Database Retriever.
 Implements a simple interface for extracting relevant information from the CDA vector database.
 """
+import os
 import faiss
 import numpy as np
 from typing import List, Optional
@@ -149,7 +150,7 @@ class CDARetriever(BaseRetriever):
 
     def _get_embedding(self, text: str) -> Optional[np.ndarray]:
         """Get embedding for text using OpenAI's embedding model (fallback method)."""
-        if OpenAI is None:
+        if OpenAI is None or not os.getenv("OPENAI_API_KEY"):
             return np.random.rand(1536).astype(np.float32)
         
         try:
