@@ -4,6 +4,9 @@ from app.services.chatbot_service import ChatbotService
 from app.db.sqlite import SessionLocal, get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Cookie
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -85,18 +88,18 @@ async def delete_chat(
 # Message endpoints
 # ─────────────────────────────────────────────
 
+class SendMessageRequest(BaseModel):
+    user_id: int
+    message: str
+
 # Add messages to a chat session
 @router.post("/sessions/{session_id}/messages")
 async def send_message(
     session_id: int,
-    user_id: int = Form(...),
-    message: str = Form(...),
+    body: SendMessageRequest,
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
-    try:
-        return await chatbot_service.send_message(session_id, user_id, message)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    return await chatbot_service.send_message(session_id, body.user_id, body.message)
 
 # Get all messages in a chat session
 @router.get("/sessions/{session_id}/messages")

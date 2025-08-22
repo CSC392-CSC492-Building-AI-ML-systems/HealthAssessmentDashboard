@@ -5,10 +5,13 @@ import { useChat } from "./ChatContext";
 import { v4 as uuidv4 } from "uuid";
 import type { ChatMessage } from "./types";
 import { Mic, Plus, Send } from "lucide-react"; 
+import { chatbotApi } from "@/lib/api/chatbot";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ChatInput() {
   const [input, setInput] = useState("");
   const { chats, setChats, currentChatId } = useChat();
+  const { user } = useAuth();
 
   const currentChat = chats.find(c => c.id === currentChatId);
   const hasNoMsgs = currentChat?.messages.length === 0;
@@ -17,9 +20,9 @@ export default function ChatInput() {
 
   const showWelcomeHeading = hasNoMsgs || hasOnlyBot;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || !user || !currentChatId) return;
 
     const userMessage: ChatMessage = {
       id: uuidv4(),
@@ -27,22 +30,39 @@ export default function ChatInput() {
       text: trimmed,
     };
 
-    const botMessage: ChatMessage = {
-      id: uuidv4(),
-      role: "bot",
-      text: "Thanks for your message! This is a dummy response.",
-    };
-
-    const updatedChats = chats.map((chat) => {
+    const updatedChatsWithUserMsg = chats.map((chat) => {
       if (chat.id !== currentChatId) return chat;
       return {
         ...chat,
-        messages: [...chat.messages, userMessage, botMessage],
+        messages: [...chat.messages, userMessage],
       };
     });
-
-    setChats(updatedChats);
+    setChats(updatedChatsWithUserMsg);
     setInput("");
+
+    try {
+      const response = await chatbotApi.sendMessage(String(currentChatId), String(user.id), trimmed);
+      if (response.data) {
+        const botMessage: ChatMessage = {
+          id: uuidv4(),
+          role: "bot",
+          text: response.data.content,
+        };
+
+        const updatedChatsWithBotMsg = updatedChatsWithUserMsg.map((chat) => {
+          if (chat.id !== currentChatId) return chat;
+          return {
+            ...chat,
+            messages: [...chat.messages, botMessage],
+          };
+        });
+        setChats(updatedChatsWithBotMsg);
+      } else if (response.error) {
+        console.error("Chatbot API error:", response.error);
+      }
+    } catch (error) {
+      console.error("Failed to send message to chatbot:", error);
+    }
   };
 
   return (
