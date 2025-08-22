@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Cookie
 
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 
 router = APIRouter()
