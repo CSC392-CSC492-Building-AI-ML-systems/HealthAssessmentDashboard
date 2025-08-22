@@ -8,8 +8,14 @@ import cohere
 
 load_dotenv()
 
-co = cohere.Client(os.getenv("COHERE_API_KEY"))
+co = None
 _MODEL_ID = os.getenv("INTENT_CLASSIFIER_MODEL_ID")
+
+def _get_client():    
+    global co
+    if co is None:
+       co = cohere.Client(os.getenv("COHERE_API_KEY"))
+    return co
 
 def intent_classifier(query: str) -> List[IntentEnum]:
     print("INTENT CLASSIFIER")
@@ -17,9 +23,9 @@ def intent_classifier(query: str) -> List[IntentEnum]:
         return []
     try:
         # Classify the query using the intent classifier model
-        response = co.classify(
-            model=_MODEL_ID,
-            inputs=[query.strip()]
+        response = _get_client().classify(
+             model=_MODEL_ID,
+             inputs=[query.strip()]
         )
         print("CLASSIFICATION: ", response)
     except Exception as e:
