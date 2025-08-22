@@ -8,6 +8,7 @@ from sqlalchemy import select
 from fastapi import HTTPException, status, Depends, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dataclasses import dataclass
+from fastapi.security import OAuth2PasswordBearer
 
 from app.models.user import User
 from app.schemas.user import UserCreate
