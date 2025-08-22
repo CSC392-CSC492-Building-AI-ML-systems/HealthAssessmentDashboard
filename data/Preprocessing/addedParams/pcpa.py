@@ -125,24 +125,39 @@ def extract_all_pcpa_entry_fields(url: str):
 
     table = driver.find_element(By.CSS_SELECTOR, "div.views-view-grid.vertical.cols-1.clearfix.col > div > div")
 
+    selenium_screenshot(driver, "pcpa_entry_fields.png")
+
     print("TABLE")
     print(table)
 
-    entry_fields = {"pcpa_file_number": table.find_element(By.CSS_SELECTOR,
-                                                           "div.views-field-nid span.field-content").text.strip(),
-                    "negotiation_status": table.find_element(By.CSS_SELECTOR,
-                                                             "div.views-field-field-status div.field-content").text.strip(),
-                    "indications": table.find_element(By.CSS_SELECTOR,
-                                                      "div.views-field-field-indication-txt div.field-content").text.strip(),
-                    "manufacturer": table.find_element(By.CSS_SELECTOR,
-                                                       "div.views-field-field-manufacturer-name div.field-content").text.strip(),
-                    "cda_project_number": table.find_element(By.CSS_SELECTOR,
-                                                             "div.views-field-field-cadth-project-id div.field-content").text.strip(),
-                    "pcpa_engagement_letter_issued": table.find_element(
-                        By.CSS_SELECTOR,
-                        "div.views-field-field-engagement-date div.field-content"
-                    ).text.strip(), "negotiation_process_concluded": table.find_element(By.CSS_SELECTOR,
-                                                                                        "div.views-field-field-close-date time").get_attribute(
-            "datetime").strip()}
+    entry_fields = {
+        "pcpa_file_number": table.find_element(By.CSS_SELECTOR,
+                                               "div.views-field-nid span.field-content").text.strip(),
+        "negotiation_status": table.find_element(By.CSS_SELECTOR,
+                                                 "div.views-field-field-status div.field-content").text.strip(),
+        "indications": table.find_element(By.CSS_SELECTOR,
+                                          "div.views-field-field-indication-txt div.field-content").text.strip(),
+        "manufacturer": table.find_element(By.CSS_SELECTOR,
+                                           "div.views-field-field-manufacturer-name div.field-content").text.strip(),
+        "cda_project_number": table.find_element(By.CSS_SELECTOR,
+                                                 "div.views-field-field-cadth-project-id div.field-content").text.strip(),
+        "pcpa_engagement_letter_issued": table.find_element(
+            By.CSS_SELECTOR,
+            "div.views-field-field-engagement-date div.field-content"
+        ).text.strip(),
+        "negotiation_process_concluded": get_date_or_text(table, "div.views-field-field-close-date")
+    }
 
     return entry_fields
+
+
+def get_date_or_text(table, selector):
+    try:
+        time_elem = table.find_element(By.CSS_SELECTOR, f"{selector} time")
+        print("RETURNING DATE")
+        print(time_elem.get_attribute("datetime").strip())
+        return time_elem.get_attribute("datetime").strip()
+    except:
+        print("RETURNING N/A")
+        print(table.find_element(By.CSS_SELECTOR, selector).text.strip())
+        return "N/A"

@@ -2,7 +2,7 @@
 
 import React from "react";
 import AuthPage from "@/components/auth/AuthPage";
-import { useSignupFlow } from "./hooks/useSignupFlow";
+import { useSignupFlow } from "../../hooks/useSignupFlow";
 import type { OrganizationType, UserPreferences } from "./types";
 
 const Signup: React.FC = () => {

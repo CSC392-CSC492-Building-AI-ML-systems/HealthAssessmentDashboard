@@ -14,6 +14,7 @@ router = APIRouter()
 async def get_organization_service(db: AsyncSession = Depends(get_db)) -> OrganizationService:
     return OrganizationService(db)
 
+# Create a new organization
 @router.post("/", response_model=OrganizationRead)
 async def create_organization(
     organization: OrganizationCreate,
@@ -23,6 +24,7 @@ async def create_organization(
     """Create a new organization"""
     return await organization_service.create_organization(organization)
 
+# List all organizations
 @router.get("/", response_model=List[OrganizationRead])
 async def get_organizations(
     organization_service: OrganizationService = Depends(get_organization_service)
@@ -30,6 +32,7 @@ async def get_organizations(
     """Get all organizations"""
     return await organization_service.get_organizations()
 
+# Search organizations by name and province
 @router.get("/search", response_model=List[OrganizationRead])
 async def search_organizations(
     q: Optional[str] = Query(None, description="Search query for organization name"),
@@ -40,6 +43,7 @@ async def search_organizations(
     """Search organizations by name and optionally filter by province"""
     return await organization_service.search_organizations(query=q, province=province, limit=limit)
 
+# Get an organization by ID
 @router.get("/{organization_id}", response_model=OrganizationRead)
 async def get_organization(
     organization_id: int,
@@ -48,6 +52,7 @@ async def get_organization(
     """Get a specific organization by ID"""
     return await organization_service.get_organization_by_id(organization_id)
 
+# Update an organization
 @router.put("/{organization_id}", response_model=OrganizationRead)
 async def update_organization(
     organization_id: int,
@@ -58,6 +63,7 @@ async def update_organization(
     """Update an organization"""
     return await organization_service.update_organization(organization_id, organization_update)
 
+# Rename a chat session
 @router.delete("/{organization_id}")
 async def delete_organization(
     organization_id: int,

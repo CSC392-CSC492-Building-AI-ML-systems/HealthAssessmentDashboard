@@ -56,6 +56,33 @@ def extract_all_health_canada_entry_fields(dins: list[str]):
                 return {}
             except:
                 print("Valid DIN")
+                
+                # SOME ENTRIES (i.e. Dupixent) HAVE MULTIPLE DRUG ENTRIES WITH THE SAME DIN
+                try:
+                    table = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.ID, "results"))
+                    )
+                    # print(rows.get_attribute("outerHTML"))
+
+                    rows = table.find_elements(By.CSS_SELECTOR, "tbody tr")
+
+                    selenium_screenshot(driver, "multiple_drug_entries.png")
+
+                    for i in range(len(rows)):
+                        row = driver.find_elements(By.CSS_SELECTOR, "#results tbody tr")[i]
+                        cells = row.find_elements(By.TAG_NAME, "td")
+
+                        if len(cells) >= 6:
+                            din_cell = cells[1]
+                            din = din_cell.text.strip()
+                            din_link = din_cell.find_element(By.TAG_NAME, "a").get_attribute("href")
+
+                    driver.get(din_link)
+                    print("DRIVER ROUTING TO", din_link)
+                except:
+                    rows = []
+
+                selenium_screenshot(driver, "selected_drug_entry.png")
 
                 rows = driver.find_elements(By.CSS_SELECTOR, "div.row")
 
@@ -87,5 +114,7 @@ def extract_all_health_canada_entry_fields(dins: list[str]):
         except Exception as e:
             print(f"Error for DIN '{din}': {e}")
             continue
+
+        print("FINALIZED DRUG ENTRIES FROM HEALTH CANADA DRUG DATABASE", entries)
 
     return entries

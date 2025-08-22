@@ -84,7 +84,7 @@ export async function httpClient<T = any>(
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
     // Handle authentication issues
-    if (response.status === 401 && !skipRefresh) {
+    if (response.status === 401 && !skipRefresh && token) {
       const refreshed = await refreshToken();
       if (refreshed) {
         // Retry with new token
@@ -95,7 +95,11 @@ export async function httpClient<T = any>(
       } else {
         // Refresh failed, redirect to login
         localStorage.removeItem('access_token');
-        window.location.href = '/login';
+        // Only redirect if not on public pages
+        const publicPages = ['/signup', '/login'];
+        if (!publicPages.includes(window.location.pathname)) {
+          window.location.href = '/login';
+        }
         return { error: 'Authentication failed', status: 401 };
       }
     }
