@@ -36,7 +36,7 @@ export default function MessageBubble({ message }: { message: ChatMessage }) {
           ${isUser
             ? "bg-[var(--text-light)] text-[var(--hover-box)]"
             : "text-[var(--text-light)]" 
-          }`}
+          } whitespace-pre-wrap`}
       >
         {displayedText}
       </div>

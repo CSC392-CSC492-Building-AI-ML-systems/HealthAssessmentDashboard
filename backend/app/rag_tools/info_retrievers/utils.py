@@ -10,6 +10,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 from app.rag_tools.info_retrievers.config import (
     UNIFIED_INDEX_PATH,
     UNIFIED_METADATA_PATH,
@@ -54,6 +56,12 @@ def load_embeddings():
 
     print("Loading FAISS index and metadata from Azure", flush=True)
 
+    UNIFIED_INDEX_PATH = os.path.join(BASE_DIR, "unified.index")
+    UNIFIED_METADATA_PATH = os.path.join(BASE_DIR, "unified_meta.pkl")
+
+    # download_blob("unified.index", UNIFIED_INDEX_PATH)
+    # download_blob("unified_meta.pkl", UNIFIED_METADATA_PATH)
+
     # Download blobs if they exist
     print(blob_exists("unified.index"))
     print(blob_exists("unified_meta.pkl"))
@@ -66,4 +74,3 @@ def load_embeddings():
 
     print(f"Loaded {_global_faiss_index.ntotal} vectors from FAISS index.", flush=True)
     return _global_faiss_index, _global_metadata
-

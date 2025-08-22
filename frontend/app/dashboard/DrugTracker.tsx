@@ -23,34 +23,34 @@ import {
   
   const drugs: Drug[] = [
     {
-      drug: "XXX",
-      brandName: "N/A",
-      manufacturer: "N/A",
-      agency: "PCPA",
-      therapeuticArea: "Diabetes I",
+      drug: "Ozempic",
+      brandName: "Semaglutide",
+      manufacturer: "Novo Nordisk",
+      agency: "Health Canada",
+      therapeuticArea: "Type 2 Diabetes",
       status: "Completed",
-      lastUpdate: "End of feedback period",
-      timeline: "19-Apr-22"
+      lastUpdate: "Approved",
+      timeline: "01-Jan-20"
     },
     {
-      drug: "XXX",
-      brandName: "N/A",
-      manufacturer: "N/A",
-      agency: "CDA",
-      therapeuticArea: "Head and neck cancer",
-      status: "Completed",
-      lastUpdate: "Final recommendation posted",
-      timeline: "16-May-25"
-    },
-    {
-      drug: "XXX",
-      brandName: "N/A",
-      manufacturer: "N/A",
+      drug: "Keytruda",
+      brandName: "Pembrolizumab",
+      manufacturer: "Merck",
       agency: "INESSS",
-      therapeuticArea: "Orthopedic cancer",
+      therapeuticArea: "Oncology",
       status: "In Progress",
-      lastUpdate: "Final recommendation posted",
-      timeline: "11-Aug-25"
+      lastUpdate: "Clinical Trial Phase III",
+      timeline: "15-Mar-23"
+    },
+    {
+      drug: "Rinvoq",
+      brandName: "Upadacitinib",
+      manufacturer: "AbbVie",
+      agency: "PCPA",
+      therapeuticArea: "Rheumatoid Arthritis",
+      status: "Completed",
+      lastUpdate: "Negotiations Finalized",
+      timeline: "10-Jul-22"
     }
   ];
   

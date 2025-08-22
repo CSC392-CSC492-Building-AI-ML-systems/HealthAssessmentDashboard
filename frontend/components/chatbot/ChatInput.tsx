@@ -41,12 +41,14 @@ export default function ChatInput() {
     setInput("");
 
     try {
-      const response = await chatbotApi.sendMessage(String(currentChatId), String(user.id), trimmed);
+      console.log(currentChatId)
+      const response = await chatbotApi.sendMessage(String(2), String(user.id), trimmed);
+      console.log(response)
       if (response.data) {
         const botMessage: ChatMessage = {
           id: uuidv4(),
           role: "bot",
-          text: response.data.content,
+          text: response.data.bot_response,
         };
 
         const updatedChatsWithBotMsg = updatedChatsWithUserMsg.map((chat) => {
