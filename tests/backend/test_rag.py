@@ -10,7 +10,7 @@ from app.models.enums import IntentEnum
 def _make_stub_client(top_prediction: str):
     """Create a stub Cohere client that returns a classify() result."""
     response = types.SimpleNamespace(
-        classifications=[types.SimpleNamespace(prediction=top_prediction, labels={} )]
+        classifications=[types.SimpleNamespace(prediction=top_prediction, labels={top_prediction: types.SimpleNamespace(confidence=1.0)} )]
     )
 
     class _StubClient:
