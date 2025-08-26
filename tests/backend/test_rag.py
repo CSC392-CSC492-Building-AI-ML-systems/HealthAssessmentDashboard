@@ -23,7 +23,7 @@ def _make_stub_client(top_prediction: str):
 @pytest.fixture()
 def ic_module():
     """Return the intent_classifier module (imported fresh for each test)."""
-    return importlib.import_module("app.rag_tools.intent_classifier.intent_classifier")
+    return importlib.import_module("app.rag_tools.classifiers.intent_classifier")
 
 
 def test_empty_query_returns_empty_list(ic_module):
