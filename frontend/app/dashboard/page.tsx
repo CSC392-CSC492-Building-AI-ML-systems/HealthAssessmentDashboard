@@ -3,7 +3,9 @@ import NewsCard from "./NewsCard";
 import DrugTracker from "./DrugTracker";
 import ProjectCard from "./ProjectCard";
 import TherapeuticChart from "./TherapeuticChart";
+import DrugButton from "@/components/general/DrugButton";
 import React, { useEffect, useState } from "react";
+import { Pill, Syringe } from "lucide-react";
 
 const Dashboard = () => {
   const newsItems = [
@@ -23,16 +25,22 @@ const Dashboard = () => {
 
   const projects = [
     {
-      title: "Project #1",
+      title: "Title #1",
+      projectNumber: "project #1",
       therapeuticArea: "Diabetes I",
-      predictionType: "approval" as const,
-      value: "8 months"
+      predictionType: "Approval" as const,
+      value: "8 months",
+      status: "In Progress" as const,
+      dose: "Injection" as const,
     },
     {
-      title: "Project #2",
-      therapeuticArea: "Head and neck cancer", 
-      predictionType: "pricing" as const,
-      value: "$2,000 - 6,000"
+      title: "Title #2",
+      projectNumber: "project #2",
+      therapeuticArea: "Orthopedic Cancer", 
+      predictionType: "Approval" as const,
+      value: "3 months",
+      status: "Accepted" as const,
+      dose: "Pill" as const,
     }
   ];
 
@@ -55,29 +63,35 @@ const Dashboard = () => {
       </section>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Internal Portfolio Predictions */}
         <section>
-          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Internal Portfolio Predictions</h2>
-          <div className="space-y-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Internal Portfolio Predictions</h2>
+        <div className="flex justify-end mb-6"> <DrugButton /> </div>
+        </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project, index) => (
               <ProjectCard
                 key={index}
                 title={project.title}
+                projectNumber={project.projectNumber}
                 therapeuticArea={project.therapeuticArea}
                 predictionType={project.predictionType}
                 value={project.value}
+                status={project.status}
+                dose={project.dose}
               />
             ))}
           </div>
         </section>
 
-        {/* Therapeutic Area Analysis */}
-        <section>
+      {/* Therapeutic Area Analysis */}
+      <section>
         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Therapeutic Area Analysis</h2>
           <TherapeuticChart />
         </section>
-      </div>
     </div>
   );
 };
