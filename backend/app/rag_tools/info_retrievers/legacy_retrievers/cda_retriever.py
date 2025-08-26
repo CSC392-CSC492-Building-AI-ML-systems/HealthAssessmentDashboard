@@ -1,5 +1,8 @@
 
 """
+LEGACY SOLUTION: NEW SOLUTION USES THE NEW VectorDBRetriever + RetrieverService COLLAPSED RETRIEVER COMBINATION
+
+-----------
 Minimal CDA (Canadian Drug Agency) Vector Database Retriever.
 Implements a simple interface for extracting relevant information from the CDA vector database.
 """
@@ -7,7 +10,7 @@ import os
 import faiss
 import numpy as np
 from typing import List, Optional
-from .base_retriever import BaseRetriever, RetrievalResult
+from backend.app.rag_tools.info_retrievers.base_retriever import BaseRetriever, RetrievalResult
 
 # Import LangChain components, fall back to direct implementations
 try:
@@ -83,7 +86,7 @@ class CDARetriever(BaseRetriever):
             self._metadata = []
             self._index_loaded = True
 
-    def retrieve(self, query: str, top_k: int = 3) -> List[RetrievalResult]:
+    def retrieve(self, query: str, user_id: int = None, top_k: int = 3) -> List[RetrievalResult]:
         """
         Retrieve relevant information from the CDA vector database given a user query.
         """
