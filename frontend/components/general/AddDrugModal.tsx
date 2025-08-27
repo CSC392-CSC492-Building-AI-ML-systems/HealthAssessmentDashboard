@@ -97,10 +97,10 @@ export default function AddDrugModal({
   }) {
     return (
       <div>
-        <label className="mb-1 block text-sm font-medium">{label}</label>
+        <label className="block text-sm font-medium">{label}</label>
         <input
           type={inputType}
-          className="w-full rounded-xl border px-3 py-2 outline-none
+          className="w-full rounded-xl border px-3 outline-none
                      bg-[var(--input-bg)] text-[var(--input-text)]
                      focus:ring-2 focus:ring-rose-400"
           value={value}
