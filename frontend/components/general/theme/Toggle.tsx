@@ -20,12 +20,12 @@ const Toggle = () => {
   return (
     <div>
       {currentTheme === 'dark' ? (
-        <button className="bg-[var(--brand-light)] text-[var(--brand-dark)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:opacity-90  hover:shadow-xl"
+        <button className="bg-[var(--brand-light)] text-[var(--brand-dark)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:shadow-xl"
           onClick={() => setTheme("light")}>
           <Sun></Sun>
         </button>
       ) : (
-        <button className="bg-[var(--brand-dark)] text-[var(--brand-light)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:opacity-90 hover:light-xl"
+        <button className="bg-[var(--brand-dark)] text-[var(--brand-light)] px-3.5 py-2 rounded-full transition-transform duration-300 hover:scale-105 hover:light-xl"
           onClick={() => setTheme("dark")}>
           <Moon></Moon>
         </button>

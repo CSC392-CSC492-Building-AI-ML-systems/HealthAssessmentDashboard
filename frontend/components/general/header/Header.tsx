@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
     }
 
     return (
-        <nav className="bg-[var(--background)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">
+        <nav className="bg-[var(--headerfooter)] px-4 sm:px-6 md:px-8 lg:px-16 py-1 flex items-center justify-between sticky top-0 z-50">
 
             {/* Logo */}
             <div className="flex items-center space-x-2">
@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
                 {/* <span className="text-[var(--text-light)] font-semibold text-lg">OurPATHS</span> */}
             </div>
 
-            {/* Full */}
+            {/* Full or Dashboard */}
             {mode === "full" ? (
                 <div className="flex items-center space-x-6 text-[var(--text-light)]">
                     <Link href="/" className="hover:text-gray-400">Home</Link>
@@ -60,9 +60,9 @@ const Header: React.FC<HeaderProps> = ({ mode = "full" }) => {
                   </div>
               
                   {/* Nav Buttons and Account Button */}
-                  <div className="flex items-center space-x-6 text-[var(--foreground)]">
-                    <Link href="/account" className="hover:opacity-70">Account</Link>
-                    <Link href="/contact" className="hover:opacity-70">Contact</Link>
+                  <div className="flex items-center space-x-6">
+                    <Link href="/account" className="hover:text-[var(--foreground)]-400">Account</Link>
+                    <Link href="/contact" className="hover:text-[var(--foreground)]-400">Contact</Link>
                     <Chatbot />
                     <Toggle />
                   </div>
