@@ -3,6 +3,13 @@ import os
 import sys
 from pathlib import Path
 
+# create an isolated sqlite db for each test run
+TEST_DB_URL_TEMPLATE = "sqlite+aiosqlite:///{db_file}"
+
+os.environ["TESTING"] = "1"
+os.environ["AZURE_STORAGE_CONNECTION_STRING"] = "DefaultEndpointsProtocol=https;AccountName=test;AccountKey=test"
+os.environ["OPENAI_API_KEY"] = "test-openai-key"
+
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -22,13 +29,25 @@ azure.storage.blob.BlobServiceClient = types.SimpleNamespace(from_connection_str
 faiss.read_index = lambda *a, **k: faiss.IndexFlatL2(1536)
 pickle.load = lambda *a, **k: []
 
+# Mock cohere module
+sys.modules['cohere'] = types.SimpleNamespace(
+    Client=lambda *a, **k: types.SimpleNamespace(
+        classify=lambda *a, **k: types.SimpleNamespace(
+            classifications=[
+                types.SimpleNamespace(
+                    prediction="general_query",
+                    confidence=0.8
+                )
+            ]
+        )
+    )
+)
+
 from app.db.sqlite import get_db
 from app.models.base import Base
 from app.routers.auth import router as auth_router
 from app.routers.chatbot import router as chat_router
 
-# create an isolated sqlite db for each test run
-TEST_DB_URL_TEMPLATE = "sqlite+aiosqlite:///{db_file}"
 
 @pytest_asyncio.fixture(scope="session")
 def event_loop():
