@@ -19,16 +19,22 @@ const Dashboard = () => {
   }
   const newsItems = [
     {
-      title: "News #1",
-      description: "The latest news on the drug class or therapeutic area of interest."
+      title: "Sanofi Raises Annual Sales Forecast Amid Strong Dupixent Demand",
+      description: "Sanofi has increased its annual sales growth forecast to a high single-digit percentage, driven by robust global demand for its anti-inflammatory drug Dupixent. The company also reaffirmed its low double-digit earnings growth projection for the year.",
+      imageUrl: "/news1.jpg",
+      linkUrl: "https://www.reuters.com/business/healthcare-pharmaceuticals/sanofi-raises-annual-sales-growth-expectations-strong-dupixent-demand-2025-07-31/"
     },
     {
-      title: "News #2", 
-      description: "The latest news on the drug class or therapeutic area of interest."
+      title: "Pfizer's Combination Therapy with Keytruda Shows Promise in Bladder Cancer Trial", 
+      description: "Pfizer's cancer drug Padcev, combined with Merck's Keytruda, significantly improved survival rates in patients with muscle-invasive bladder cancer, according to interim results from a late-stage trial.",
+      imageUrl: "/news2.jpg",
+      linkUrl: "https://www.reuters.com/business/healthcare-pharmaceuticals/pfizers-combination-therapy-improves-survival-bladder-cancer-trial-2025-08-12/"
     },
     {
-      title: "News #3",
-      description: "The latest news on the drug class or therapeutic area of interest."
+      title: "AbbVie's Rinvoq Receives FDA Approval for Giant Cell Arteritis Treatment",
+      description: "The FDA has approved AbbVie's Rinvoq (upadacitinib) for the treatment of adults with giant cell arteritis, marking its ninth approved indication across various therapeutic areas.",
+      imageUrl: "/news3.jpg",
+      linkUrl: "https://news.abbvie.com/2025-04-29-RINVOQ-R-upadacitinib-Receives-U-S-FDA-Approval-for-Giant-Cell-Arteritis-GCA"
     }
   ];
 
@@ -60,7 +66,13 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold text-[var(--foreground)] mb-6">Latest Market Intelligence</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {newsItems.map((item, index) => (
-            <NewsCard key={index} title={item.title} description={item.description} />
+            <NewsCard 
+              key={index} 
+              title={item.title} 
+              description={item.description} 
+              imageUrl={item.imageUrl}
+              linkUrl={item.linkUrl}
+            />
           ))}
         </div>
       </section>

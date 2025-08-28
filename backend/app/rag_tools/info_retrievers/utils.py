@@ -10,6 +10,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 from app.rag_tools.info_retrievers.config import (
     BASE_DIR
 )
@@ -103,10 +105,19 @@ def load_embeddings(user_id: int = None):
             metadata = pickle.load(f)
         print(f"Loaded {faiss_index.ntotal} vectors from downloaded FAISS index.", flush=True)
 
+    UNIFIED_INDEX_PATH = os.path.join(BASE_DIR, "unified.index")
+    UNIFIED_METADATA_PATH = os.path.join(BASE_DIR, "unified_meta.pkl")
+
+    # download_blob("unified.index", UNIFIED_INDEX_PATH)
+    # download_blob("unified_meta.pkl", UNIFIED_METADATA_PATH)
+
+    # Download blobs if they exist
+    print(blob_exists("unified.index"))
+    print(blob_exists("unified_meta.pkl"))
+    print(UNIFIED_INDEX_PATH)
+    print(UNIFIED_METADATA_PATH)
     # CACHE TO THE CORRECT GLOBALS VIA GLOBAL VARS
     globals()[index_global_var] = faiss_index
     globals()[meta_global_var] = metadata
 
     return faiss_index, metadata
-
-

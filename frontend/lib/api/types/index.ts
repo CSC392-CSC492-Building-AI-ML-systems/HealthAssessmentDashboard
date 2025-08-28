@@ -124,6 +124,7 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant';
   timestamp?: string;
+  bot_response: string;
 }
 
 /**
