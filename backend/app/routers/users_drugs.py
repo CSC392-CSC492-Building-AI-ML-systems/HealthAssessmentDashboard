@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Body, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import json
@@ -30,23 +30,25 @@ async def create_drug(
     drug_data: str = Form(...),
     files: Optional[List[UploadFile]] = File(None),
     current_user: User = Depends(get_current_user),
-    drug_service: DrugService = Depends(get_drug_service)
+    drug_service: DrugService = Depends(get_drug_service),
 ):
     """Create a new drug with optional PDF uploads"""
+    print("drug_data received:", drug_data)
     try:
+        print(drug_data)
         drug_create = DrugCreate.parse_raw(drug_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid drug data: {str(e)}")
-    
+
     # Validate file types (prioritize PDFs)
     if files:
         for file in files:
             if not file.filename.lower().endswith('.pdf'):
                 raise HTTPException(
-                    status_code=400, 
+                    status_code=400,
                     detail=f"Only PDF files are currently supported. Received: {file.filename}"
                 )
-    
+    print("CREATING DRUG")
     return await drug_service.create_drug(current_user.id, drug_create, files)
 
 # Get specific drug with full details

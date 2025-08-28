@@ -41,7 +41,7 @@ export interface RequestOptions extends RequestInit {
 }
 
 // In-memory cache for GET requests
-const apiCache = new Map<string, {data: any, timestamp: number}>();
+const apiCache = new Map<string, { data: any, timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
@@ -70,15 +70,42 @@ export async function httpClient<T = any>(
 
     // Prepare headers
     const token = localStorage.getItem('access_token');
+    let headers: Record<string, string> = {};
+
+    // Convert Headers instance
+    if (fetchOptions.headers instanceof Headers) {
+      fetchOptions.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+    }
+    // Convert array of tuples
+    else if (Array.isArray(fetchOptions.headers)) {
+      fetchOptions.headers.forEach(([key, value]) => {
+        headers[key] = value;
+      });
+    }
+    // Already an object
+    else if (fetchOptions.headers) {
+      headers = { ...fetchOptions.headers };
+    }
+
+    // Add Authorization if token exists
+    if (token && !skipAuth) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Only set JSON content-type if body is NOT FormData
+    if (!(fetchOptions.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     const config: RequestInit = {
       ...fetchOptions,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && !skipAuth && { Authorization: `Bearer ${token}` }),
-        ...fetchOptions.headers,
-      },
+      headers,
       credentials: 'include',
     };
+
+
 
     // Make the request
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
@@ -127,7 +154,7 @@ export async function httpClient<T = any>(
     };
   } catch (error) {
     console.error('API request error:', error);
-    
+
     // Retry logic for network errors
     if (options.retries && options.retries > 0) {
       console.log(`Retrying request, ${options.retries} attempts left`);
@@ -136,7 +163,7 @@ export async function httpClient<T = any>(
         retries: options.retries - 1,
       });
     }
-    
+
     return {
       error: error instanceof Error ? error.message : 'Network error',
       status: 0,

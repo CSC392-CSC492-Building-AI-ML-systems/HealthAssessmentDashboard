@@ -6,16 +6,20 @@ import TherapeuticChart from "./TherapeuticChart";
 import DrugButton from "@/components/general/DrugButton";
 import React, { useEffect, useState } from "react";
 import { Pill, Syringe } from "lucide-react";
-import AddDrugModal, { NewDrugPayload } from "@/components/general/AddDrugModal";
+import AddDrugModal from "@/components/general/AddDrugModal";
+import { NewDrugPayload } from "@/lib/api";
+import { drugApi } from "@/lib/api/drug";
 
 
 const Dashboard = () => {
   // Modal stuff
   const [showAdd, setShowAdd] = useState(false);
 
-  function handleAddDrug(data: NewDrugPayload) {
-    console.log("New internal drug:", data); 
-    // later: send to API/db
+  async function handleAddDrug(data: NewDrugPayload) {
+    console.log("New internal drug:", data);
+
+    const response = await drugApi.addDrug(data);
+    console.log(response.data)
   }
   const newsItems = [
     {
@@ -23,7 +27,7 @@ const Dashboard = () => {
       description: "The latest news on the drug class or therapeutic area of interest."
     },
     {
-      title: "News #2", 
+      title: "News #2",
       description: "The latest news on the drug class or therapeutic area of interest."
     },
     {
@@ -45,7 +49,7 @@ const Dashboard = () => {
     {
       title: "Title #2",
       projectNumber: "project #2",
-      therapeuticArea: "Orthopedic Cancer", 
+      therapeuticArea: "Orthopedic Cancer",
       predictionType: "Approval" as const,
       value: "3 months",
       status: "Accepted" as const,
@@ -67,53 +71,53 @@ const Dashboard = () => {
 
       {/* External Drugs Tracker */}
       <section className="w-full">
-      <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">External Drug Tracker</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">External Drug Tracker</h2>
         <DrugTracker />
       </section>
 
       {/* Bottom Section */}
-        {/* Internal Portfolio Predictions */}
-        <section>
+      {/* Internal Portfolio Predictions */}
+      <section>
 
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-[var(--foreground)]">
-              Internal Portfolio Predictions
-            </h2>
-            <button
-              onClick={() => setShowAdd(true)}   // toggles modal open
-              className="bg-[var(--button-red)] text-[var(--light-color)] px-3.5 py-2 rounded-full
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-[var(--foreground)]">
+            Internal Portfolio Predictions
+          </h2>
+          <button
+            onClick={() => setShowAdd(true)}   // toggles modal open
+            className="bg-[var(--button-red)] text-[var(--light-color)] px-3.5 py-2 rounded-full
                         transition-transform duration-300 hover:scale-105 hover:opacity-90 hover:shadow-xl"
-            >
-              +
-            </button>
-          </div>
+          >
+            +
+          </button>
+        </div>
 
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <ProjectCard
-                key={index}
-                title={project.title}
-                projectNumber={project.projectNumber}
-                therapeuticArea={project.therapeuticArea}
-                predictionType={project.predictionType}
-                value={project.value}
-                status={project.status}
-                dose={project.dose}
-              />
-            ))}
-          </div>
-        </section>
-        <AddDrugModal
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {projects.map((project, index) => (
+            <ProjectCard
+              key={index}
+              title={project.title}
+              projectNumber={project.projectNumber}
+              therapeuticArea={project.therapeuticArea}
+              predictionType={project.predictionType}
+              value={project.value}
+              status={project.status}
+              dose={project.dose}
+            />
+          ))}
+        </div>
+      </section>
+      <AddDrugModal
         open={showAdd}
         onClose={() => setShowAdd(false)}
-        onSubmit={handleAddDrug}/>
+        onSubmit={handleAddDrug} />
 
       {/* Therapeutic Area Analysis */}
       <section>
         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Therapeutic Area Analysis</h2>
-          <TherapeuticChart />
-        </section>
+        <TherapeuticChart />
+      </section>
     </div>
   );
 };

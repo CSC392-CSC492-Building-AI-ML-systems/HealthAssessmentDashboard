@@ -2,18 +2,20 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Plus, X } from "lucide-react";
+import { NewDrugPayload } from "@/lib/api";
 
-export type NewDrugPayload = {
-  title: string;
-  genericName: string;
-  therapeuticArea: string;
-  din: string;
-  organization: string;
-  submissionDate?: string;
-  projectNumber?: string;
-  description?: string;
-  documents?: File[];
-};
+enum DrugType {
+  BIOLOGIC = "biologic",
+  RARE_DISEASE = "rare_disease",
+  ONCOLOGY = "oncology",
+  STANDARD = "standard",
+}
+
+enum SubmissionPathway {
+  STANDARD = "standard",
+  PRIORITY = "priority",
+  CONDITIONAL = "conditional",
+}
 
 export default function AddDrugModal({
   open,
@@ -32,6 +34,15 @@ export default function AddDrugModal({
   const [therapeuticArea, setTherapeuticArea] = useState("");
   const [din, setDIN] = useState("");
   const [organization, setOrganization] = useState("");
+  const [costEffectiveness, setCostEffectiveness] = useState<string>("");
+  const [therapeuticValue, setTherapeuticValue] = useState<string>("");
+  const [manufacturerPrice, setManufacturerPrice] = useState<string>("");
+  const [reimbursementRestrictions, setReimbursementRestrictions] = useState<string>("");
+  const [drugType, setDrugType] = useState<DrugType>(DrugType.BIOLOGIC);
+  const [submissionPathway, setSubmissionPathway] = useState<SubmissionPathway>(
+    SubmissionPathway.STANDARD
+  );
+  const [dosageForm, setDosageForm] = useState<string>("");
   const [submissionDate, setSubmissionDate] = useState<string>("");
   const [projectNumber, setProjectNumber] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -57,13 +68,41 @@ export default function AddDrugModal({
   // ---------- helpers ----------
   function validate() {
     const e: string[] = [];
+
     if (!title.trim()) e.push("Title is required.");
     if (!genericName.trim()) e.push("Generic name is required.");
     if (!therapeuticArea.trim()) e.push("Therapeutic area is required.");
     if (!din.trim()) e.push("DIN is required.");
     if (!organization.trim()) e.push("Organization is required.");
+
+    if (!therapeuticValue.trim()) e.push("Therapeutic value is required.");
+    if (!submissionPathway.trim()) e.push("Submission pathway is required.");
+    if (!drugType.trim()) e.push("Drug type is required.");
+    if (!dosageForm.trim()) e.push("Dosage form is required");
+
+    const costEffNum = Number(costEffectiveness.trim());
+    if (!costEffectiveness.trim()) {
+      e.push("Cost effectiveness is required.");
+    } else if (isNaN(costEffNum)) {
+      e.push("Cost effectiveness must be a number.");
+    } else if (costEffNum < 0) {
+      e.push("Cost effectiveness must be a positive number.");
+    }
+
+    const manufacturerPriceNum = Number(manufacturerPrice.trim());
+    if (!manufacturerPrice.trim()) {
+      e.push("Manufacturer price is required.");
+    } else if (isNaN(manufacturerPriceNum)) {
+      e.push("Manufacturer price must be a number.");
+    } else if (manufacturerPriceNum < 0) {
+      e.push("Manufacturer price must be a positive number.");
+    }
+
+    if (!reimbursementRestrictions.trim()) e.push("Reimbursement restrictions are required.");
+
     return e;
   }
+
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,15 +114,27 @@ export default function AddDrugModal({
       therapeuticArea: therapeuticArea.trim(),
       din: din.trim(),
       organization: organization.trim(),
+
       submissionDate: submissionDate || undefined,
       projectNumber: projectNumber || undefined,
       description: description || undefined,
       documents,
+
+      therapeuticValue: therapeuticValue.trim(),
+      submissionPathway: submissionPathway.trim(),
+      drugType: drugType.trim(),
+      dosageForm: dosageForm.trim(),
+      costEffectiveness: Number(costEffectiveness),
+      manufacturerPrice: Number(manufacturerPrice),
+      reimbursementRestrictions: reimbursementRestrictions.trim(),
     });
+
     onClose();
   }
 
   // small field helper (declared before use)
+  // FIELDS WERE LOSING FOCUS WHEN TESTED DUE TO REGEN AFTER EACH LETTER TYPED, 
+  // OPTED TO USE MANUALLY IN MODAL
   function Field({
     label,
     value,
@@ -110,12 +161,13 @@ export default function AddDrugModal({
     );
   }
 
-  if (!open || !mounted) return null;
+  if (!mounted) return null;
 
   // ---------- modal JSX ----------
   const modal = (
     <div
-      className="fixed inset-0 z-[100]"
+      className={`fixed inset-0 z-[100] transition-opacity ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-drug-title"
@@ -157,38 +209,169 @@ export default function AddDrugModal({
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Title *" value={title} onChange={setTitle} inputType="text" />
-            <Field
-              label="Generic name *"
-              value={genericName}
-              onChange={setGenericName}
-              inputType="text"
-            />
-            <Field
-              label="Therapeutic area *"
-              value={therapeuticArea}
-              onChange={setTherapeuticArea}
-              inputType="text"
-            />
-            <Field label="DIN *" value={din} onChange={setDIN} inputType="text" />
-            <Field
-              label="Organization *"
-              value={organization}
-              onChange={setOrganization}
-              inputType="text"
-            />
-            <Field
-              label="Submission date"
-              value={submissionDate}
-              onChange={setSubmissionDate}
-              inputType="date"
-            />
-            <Field
-              label="Project number"
-              value={projectNumber}
-              onChange={setProjectNumber}
-              inputType="text"
-            />
+            <div>
+              <label className="block text-sm font-medium">Title *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Generic name *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={genericName}
+                onChange={(e) => setGenericName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Therapeutic area *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={therapeuticArea}
+                onChange={(e) => setTherapeuticArea(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Therapeutic value *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={therapeuticValue}
+                onChange={(e) => setTherapeuticValue(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">DIN *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={din}
+                onChange={(e) => setDIN(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Organization *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Cost effectiveness *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={costEffectiveness}
+                onChange={(e) => setCostEffectiveness(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Manufacturer price *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={manufacturerPrice}
+                onChange={(e) => setManufacturerPrice(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Reimbursement restrictions *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={reimbursementRestrictions}
+                onChange={(e) => setReimbursementRestrictions(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Drug type *</label>
+              <label>
+                Drug Type:
+                <select
+                  value={drugType}
+                  onChange={(e) => setDrugType(e.target.value as DrugType)}
+                >
+                  {Object.values(DrugType).map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Dosage form *</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={dosageForm}
+                onChange={(e) => setDosageForm(e.target.value)}
+              />
+            </div>
+            <label>
+              Submission Pathway:
+              <select
+                value={submissionPathway}
+                onChange={(e) =>
+                  setSubmissionPathway(e.target.value as SubmissionPathway)
+                }
+              >
+                {Object.values(SubmissionPathway).map((path) => (
+                  <option key={path} value={path}>
+                    {path}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div>
+              <label className="block text-sm font-medium">Submission date </label>
+              <input
+                type="date"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={submissionDate}
+                onChange={(e) => setSubmissionDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Project number</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border px-3 outline-none
+                     bg-[var(--input-bg)] text-[var(--input-text)]
+                     focus:ring-2 focus:ring-rose-400"
+                value={projectNumber}
+                onChange={(e) => setProjectNumber(e.target.value)}
+              />
+            </div>
 
             <div className="md:col-span-2">
               <label className="mb-1 block text-sm font-medium">Additional description</label>

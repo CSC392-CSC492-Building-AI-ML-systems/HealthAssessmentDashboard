@@ -31,6 +31,9 @@ class VectorDBService:
         """Load user's FAISS index and metadata from Azure Blob Storage"""
         vector_path = self._get_user_vector_path(user_id)
         metadata_path = self._get_user_metadata_path(user_id)
+
+        print("VECTOR PATH", vector_path)
+        print("METADATA PATH", metadata_path)
         
         try:
             # Download existing vector DB

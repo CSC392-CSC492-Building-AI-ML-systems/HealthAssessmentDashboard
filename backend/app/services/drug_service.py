@@ -38,29 +38,39 @@ class DrugService:
         
         return DrugRead.from_orm(drug)
 
-    async def create_drug(self, user_id: int, drug_create: DrugCreate, files: Optional[List[UploadFile]] = None) -> DrugRead:
+    async def create_drug(
+            self,
+            user_id: int,
+            drug_create: DrugCreate,
+            files: Optional[List[UploadFile]] = None
+    ) -> DrugRead:
         """Create a new drug with optional PDF uploads"""
+
         # Ensure user has a FAISS vector index
         await self.vector_db.create_user_index(user_id)
-        
+
         # Create the drug record
         drug_data = drug_create.dict()
-        
+        print("DRUG DATA", drug_data)
+
         drug = Drug(
             user_id=user_id,
             **drug_data
         )
-        
+
         self.db.add(drug)
-        await self.db.flush()  # Get the ID without committing
-        
+        await self.db.flush()  # get ID without committing
+
         # Process PDF files if provided
         if files:
             await self._process_drug_files(user_id, drug, files)
-        
+
         await self.db.commit()
-        await self.db.refresh(drug)
-        
+
+        # Eager-load the files relationship to avoid MissingGreenlet error
+        await self.db.refresh(drug, attribute_names=["files"])
+
+        # Now it's safe to convert to Pydantic model
         return DrugRead.from_orm(drug)
 
     async def update_drug(self, user_id: int, drug_id: int, drug_update: DrugUpdate, files: Optional[List[UploadFile]] = None) -> DrugRead:
@@ -150,7 +160,7 @@ class DrugService:
         """Search through user's drug documents using FAISS vector similarity"""
         return await self.vector_db.search_user_documents(user_id, query, drug_id, top_k)
 
-    async def _process_drug_files(self, user_id: int, drug: Drug, files: List[UploadFile]):
+    async def _process_drug_files(self, user_id: int, drug: Drug, files: List[UploadFile]) -> object:
         """Process and upload PDF files for a drug to blob storage and FAISS vector DB"""
         for file in files:
             if file.size == 0:

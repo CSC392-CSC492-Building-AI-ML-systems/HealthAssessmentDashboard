@@ -133,3 +133,58 @@ export interface ChatHistory {
   messages: ChatMessage[];
   conversation_id: string;
 }
+
+
+// ============================================================================
+// Drug Types
+// ============================================================================
+
+/**
+ * Complete chat conversation history
+ */
+export type NewDrugPayload = {
+  title: string;
+  genericName: string;
+  therapeuticArea: string;
+  din: string;
+  organization: string;
+  costEffectiveness: number;
+  submissionPathway: string;
+  therapeuticValue: string;
+  manufacturerPrice: number;
+  reimbursementRestrictions: string;
+  drugType: string;
+  dosageForm: string;
+  submissionDate?: string;
+  projectNumber?: string;
+  description?: string;
+  documents?: File[];
+};
+
+export interface DrugFileInfo {
+  id: number;
+  filename: string;
+  original_filename: string;
+  file_size?: number;
+  content_type?: string;
+  blob_url?: string;
+  file_type?: string;
+  created_at: string;
+}
+
+export interface DrugResponse {
+  id: number;
+  user_id: number;
+  created_at: string;
+  updated_at?: string;
+  files: DrugFileInfo[];
+
+  title: string;
+  genericName: string;
+  therapeuticArea: string;
+  din: string;
+  organization: string;
+  submissionDate?: string;
+  projectNumber?: string;
+  description?: string;
+}

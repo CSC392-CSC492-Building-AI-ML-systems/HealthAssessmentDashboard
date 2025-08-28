@@ -20,3 +20,7 @@ class User(Base, PKMixin, TimestampMixin):
         "UserPreferences", uselist=False, back_populates="user", cascade="all, delete"
     )
     chat_histories = relationship("ChatHistory", back_populates="user", cascade="all, delete-orphan")
+
+    # BEFORE WE PROPERLY IMPLEMENT ORGANIZATIONS, USERS HOLD THEIR OWN drugs
+    drugs = relationship("Drug", back_populates="user", cascade="all, delete-orphan")
+

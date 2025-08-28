@@ -37,7 +37,7 @@ class AzureBlobService:
     async def download_blob(self, filename: str, container_name: str = None) -> bytes:
         """Download a blob from Azure Storage"""
         try:
-            container = container_name or self.vector_container_name
+            container = container_name or self.container_name
             blob_client = self.client.get_blob_client(
                 container=container, 
                 blob=filename

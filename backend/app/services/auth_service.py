@@ -112,7 +112,16 @@ class AuthService:
         """Create a new user account"""
         try:
             # Check if user already exists
-            result = await self._db.execute(select(User).where(User.email == user_data.email))
+            print(user_data.email)
+            print("About to execute query...")
+            try:
+                result = await self._db.execute(
+                    select(User).where(User.email == user_data.email)
+                )
+                print("Query executed")
+            except Exception as e:
+                print("Query failed:", repr(e))
+            print("REACHED")
             if result.scalar_one_or_none():
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

@@ -56,7 +56,9 @@ async def signup(
     auth_service: AuthService = Depends(get_auth_service)
 ):
     """Register a new user and return access and refresh tokens."""
+    print("SIGNING UP")
     user = await auth_service.create_user(user_data)
+    print("ADDED USER")
     
     # Create token pair
     tokens = auth_service.create_token_pair(user.id)
