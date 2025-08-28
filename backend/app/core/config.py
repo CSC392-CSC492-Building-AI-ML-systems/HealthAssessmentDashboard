@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     cookie_domain: Optional[str] = None
     
+    # Azure Storage settings
+    AZURE_STORAGE_CONNECTION_STRING: str
+    AZURE_CONTAINER_NAME: str = "drug-documents"
+    
+    # OpenAI settings
+    OPENAI_API_KEY: str
+
     # Environment settings
     environment: str = "development"
     debug: bool = True

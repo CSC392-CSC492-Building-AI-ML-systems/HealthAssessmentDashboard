@@ -4,14 +4,15 @@ from app.models.chat_message import ChatMessage
 from app.models.chat_history import ChatHistory
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
-from app.rag_tools.intent_classifier.intent_classifier import intent_classifier
+from app.rag_tools.classifiers.intent_classifier import intent_classifier
 from typing import List, Dict, Any, Optional, Tuple
 from app.models.enums import IntentEnum
 # from app.services.agent_tools import (
 #     price_rec_service,
 #     timeline_rec_service,
 # )
-from app.rag_tools.info_retrievers.vectordb_retriever import VectorDBRetriever
+from app.rag_tools.info_retrievers.retriever_service import RetrieverService
+from app.rag_tools.info_retrievers.base_retriever import RetrievalResult
 # STEP 3 Imports
 from app.rag_tools.normalizer import normalize_tool_responses
 from app.rag_tools.llm_response_formatter import reformat
@@ -28,7 +29,7 @@ ALGORITHM = "HS256"
 class ChatbotService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.retriever = VectorDBRetriever()
+        self.retriever_service = RetrieverService()
 
     async def _get_user(self, user_id: int) -> User:
         """Helper to get and validate user existence."""
@@ -141,7 +142,7 @@ class ChatbotService:
         # Current RAG pipeline attempt:
         try:
             # STEP 2
-            tool_responses = await self.call_tools(message)
+            tool_responses = await self.call_tools(message, user_id)
             print("TOOL RESPONSES")
             print(tool_responses)
             # STEP 3.1: normalizer (passes the same user message as 'query')
@@ -186,7 +187,7 @@ class ChatbotService:
         # Save the file and optionally extract content or embeddings
         return True  # Placeholder
     
-    async def call_tools(self, query: str) -> List[Dict[str, Any]]:
+    async def call_tools(self, query: str, user_id: int) -> List[Dict[str, Any]]:
         """Route *query* to the appropriate tools based on classified intents.
 
         The function executes the following high-level flow:
@@ -213,6 +214,7 @@ class ChatbotService:
         intents = intent_classifier(query)
         intents = [IntentEnum.VECTORDB]
         print("Got intents", intents)
+        intents = [IntentEnum.VECTORDB]
         if not intents:
             return []
 
@@ -232,11 +234,26 @@ class ChatbotService:
                 print("GETTING METADATA")
 
                 # GET CORRECT VECTORDB
-                database_enum = await self._get_database()
+                # database_enum = await self._get_database()
+                # EDIT: ELECTED TO SELECT TOP k FROM EACH SOURCE AND PASS TO LLM
 
-                specified_retriever = await self.retriever.get_retriever(database_enum)
+                # IF INFO CANNOT BE FOUND FROM ONE OF THE SOURCES, IT WILL RETURN NO CHUNKS AND THE OTHER SOURCE'S DATA
+                # WILL BE USED INSTEAD AS THE PASSED metadata
 
-                metadata = specified_retriever.retrieve(query)
+                metadata = []
+
+                sources = {
+                    "CDA": await self._retrieve_cda_metadata(query),
+                    "USER": await self._retrieve_user_metadata(query, user_id),
+                }
+
+                for source_name, source_data in sources.items():
+                    if source_data:
+                        print(f"{source_name} METADATA RECEIVED")
+                        metadata.extend(source_data)
+                    else:
+                        print(f"{source_name} METADATA EMPTY")
+
                 print("METADATA: ", metadata)
                 responses.append({"intent": intent, "response": metadata})
             #
@@ -253,3 +270,16 @@ class ChatbotService:
 
         return responses
 
+    async def _retrieve_cda_metadata(self, query: str) -> List[RetrievalResult]:
+        cda_retriever = await self.retriever_service.get_retriever(DatabaseEnum.CDA_VECTORDB)
+        print("CDA RETRIEVER INVOKED")
+        cda_metadata = cda_retriever.retrieve(query)
+
+        return cda_metadata
+
+    async def _retrieve_user_metadata(self, query: str, user_id: int) -> List[RetrievalResult]:
+        user_retriever = await self.retriever_service.get_retriever(DatabaseEnum.USER_VECTORDB)
+        print("USER RETRIEVER INVOKED")
+        user_metadata = user_retriever.retrieve(query, user_id)
+
+        return user_metadata

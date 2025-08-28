@@ -1,0 +1,171 @@
+"""
+LEGACY SOLUTION: NEW SOLUTION USES THE NEW VectorDBRetriever + RetrieverService COLLAPSED RETRIEVER COMBINATION
+
+-----------
+Minimal User Vector Database Retriever.
+Implements a simple interface for extracting relevant information from the User's vector database
+(i.e. their uploaded PDFs to dashboard).
+"""
+import os
+import faiss
+import numpy as np
+from typing import List, Optional
+from backend.app.rag_tools.info_retrievers.base_retriever import BaseRetriever, RetrievalResult
+
+# Import LangChain components, fall back to direct implementations
+try:
+    from langchain_community.vectorstores.faiss import FAISS
+    from langchain_openai import OpenAIEmbeddings
+
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    FAISS = None
+    OpenAIEmbeddings = None
+    LANGCHAIN_AVAILABLE = False
+
+from app.rag_tools.info_retrievers.utils import load_embeddings
+from app.rag_tools.info_retrievers.config import EMBEDDING_MODEL
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
+
+class UserRetriever(BaseRetriever):
+    """
+    Retriever for a User's vector database.
+    Uses LangChain if available, falls back to direct FAISS implementation.
+    Easily extensible for hybrid, rerank, or other strategies in the future.
+    """
+
+    def __init__(self):
+        self.embedding_model = EMBEDDING_MODEL
+        self._vectorstore = None
+        self._index = None
+        self._metadata = None
+        self._index_loaded = False
+
+    def _ensure_index_loaded(self, user_id: int = None):
+        if self._index_loaded:
+            return
+        try:
+            print("LOADING INDEX")
+            if load_embeddings is None:
+                print("LANG AVAILABLE", LANGCHAIN_AVAILABLE)
+                print(FAISS, OpenAIEmbeddings)
+                if LANGCHAIN_AVAILABLE:
+                    self._vectorstore = None
+                else:
+                    print("USING FAISS")
+                    self._index = faiss.IndexFlatL2(1536)  # Default dimension
+                self._metadata = []
+            else:
+                print("LOADING EMBEDDINGS")
+                faiss_index, metadata = load_embeddings(user_id)
+
+                if LANGCHAIN_AVAILABLE and FAISS is not None:
+                    # Use LangChain FAISS wrapper
+                    embeddings = OpenAIEmbeddings(model=self.embedding_model)
+                    self._vectorstore = FAISS(
+                        embedding_function=embeddings,
+                        index=faiss_index,
+                        docstore=None,
+                        index_to_docstore_id=None
+                    )
+                else:
+                    # Use direct FAISS
+                    print("NTOTAL")
+                    print(faiss_index.ntotal)
+                    self._index = faiss_index
+                self._metadata = metadata
+            self._index_loaded = True
+        except Exception as e:
+            if LANGCHAIN_AVAILABLE:
+                self._vectorstore = None
+            else:
+                self._index = faiss.IndexFlatL2(1536)
+            self._metadata = []
+            self._index_loaded = True
+
+    def retrieve(self, query: str, user_id: int = None, top_k: int = 3) -> List[RetrievalResult]:
+        """
+        Retrieve relevant information from the User's vector database given a user query.
+        """
+        print("USER RETRIEVER RETRIEVING")
+        self._ensure_index_loaded(user_id)
+        print("INDEX LOADED")
+        print(self._index)
+        print(self._index.ntotal)
+        if not query.strip():
+            return []
+
+        try:
+            if LANGCHAIN_AVAILABLE and self._vectorstore is not None:
+                docs_and_scores = self._vectorstore.similarity_search_with_score(query, k=top_k)
+                results = []
+                for rank, (doc, score) in enumerate(docs_and_scores):
+                    # Normalize LangChain output
+                    result = RetrievalResult(
+                        text=doc.page_content,
+                        metadata=doc.metadata if hasattr(doc, 'metadata') else {},
+                        score=float(1.0 - score),  # distance to similarity (0-1, higher is better)
+                        rank=rank + 1,
+                        database="USER_VECTORDB"
+                    )
+                    results.append(result)
+                return results
+
+            # FAISS implementation
+            elif self._index is not None and self._index.ntotal > 0:
+                # Query embedding
+                print("SEARCHING WITH FAISS")
+                query_embedding = self._get_embedding(query)
+                if query_embedding is None:
+                    return []
+
+                query_embedding = query_embedding.reshape(1, -1).astype(np.float32)
+                distances, indices = self._index.search(query_embedding, top_k)
+
+                results = []
+                for rank, (distance, idx) in enumerate(zip(distances[0], indices[0])):
+                    if idx >= 0 and idx < len(self._metadata):  # Valid index
+                        metadata = self._metadata[idx] if self._metadata else {}
+
+                        # Extract text from metadata
+                        text = metadata.get('text',
+                                            metadata.get('content', metadata.get('page_content', str(metadata))))
+
+                        # Normalize FAISS output
+                        result = RetrievalResult(
+                            text=text,
+                            metadata=metadata,
+                            score=float(1.0 - distance),  # distance to similarity (0-1, higher is better)
+                            rank=rank + 1,
+                            database="CDA_VECTORDB"
+                        )
+                        results.append(result)
+                return results
+
+            else:
+                print("FAILED")
+                return []
+
+        except Exception as e:
+            return []
+
+    def _get_embedding(self, text: str) -> Optional[np.ndarray]:
+        """Get embedding for text using OpenAI's embedding model (fallback method)."""
+        if OpenAI is None or not os.getenv("OPENAI_API_KEY"):
+            return np.random.rand(1536).astype(np.float32)
+
+        try:
+            client = OpenAI()
+            response = client.embeddings.create(
+                model=self.embedding_model,
+                input=text.strip()
+            )
+            embedding = np.array(response.data[0].embedding, dtype=np.float32)
+            return embedding
+        except Exception as e:
+            return np.random.rand(1536).astype(np.float32)

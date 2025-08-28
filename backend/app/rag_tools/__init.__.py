@@ -7,11 +7,11 @@ This module contains tools for RAG including:
 - ML services for predictions and recommendations
 """
 
-from .info_retrievers import VectorDBRetriever, CDARetriever
-from .intent_classifier.intent_classifier import intent_classifier
+from .info_retrievers import RetrieverService,VectorDBRetriever
+from .classifiers.intent_classifier import intent_classifier
 
 __all__ = [
+    'RetrieverService',
     'VectorDBRetriever',
-    'CDARetriever', 
     'intent_classifier'
 ]

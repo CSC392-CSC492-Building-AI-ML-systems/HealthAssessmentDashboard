@@ -3,9 +3,20 @@ import NewsCard from "./NewsCard";
 import DrugTracker from "./DrugTracker";
 import ProjectCard from "./ProjectCard";
 import TherapeuticChart from "./TherapeuticChart";
+import DrugButton from "@/components/general/DrugButton";
 import React, { useEffect, useState } from "react";
+import { Pill, Syringe } from "lucide-react";
+import AddDrugModal, { NewDrugPayload } from "@/components/general/AddDrugModal";
+
 
 const Dashboard = () => {
+  // Modal stuff
+  const [showAdd, setShowAdd] = useState(false);
+
+  function handleAddDrug(data: NewDrugPayload) {
+    console.log("New internal drug:", data); 
+    // later: send to API/db
+  }
   const newsItems = [
     {
       title: "Sanofi Raises Annual Sales Forecast Amid Strong Dupixent Demand",
@@ -29,16 +40,22 @@ const Dashboard = () => {
 
   const projects = [
     {
-      title: "Project #1",
+      title: "Title #1",
+      projectNumber: "project #1",
       therapeuticArea: "Diabetes I",
-      predictionType: "approval" as const,
-      value: "8 months"
+      predictionType: "Approval" as const,
+      value: "8 months",
+      status: "In Progress" as const,
+      dose: "Injection" as const,
     },
     {
-      title: "Project #2",
-      therapeuticArea: "Head and neck cancer", 
-      predictionType: "pricing" as const,
-      value: "$2,000 - 6,000"
+      title: "Title #2",
+      projectNumber: "project #2",
+      therapeuticArea: "Orthopedic Cancer", 
+      predictionType: "Approval" as const,
+      value: "3 months",
+      status: "Accepted" as const,
+      dose: "Pill" as const,
     }
   ];
 
@@ -67,29 +84,48 @@ const Dashboard = () => {
       </section>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Internal Portfolio Predictions */}
         <section>
-          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Internal Portfolio Predictions</h2>
-          <div className="space-y-6">
+
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-[var(--foreground)]">
+              Internal Portfolio Predictions
+            </h2>
+            <button
+              onClick={() => setShowAdd(true)}   // toggles modal open
+              className="bg-[var(--button-red)] text-[var(--light-color)] px-3.5 py-2 rounded-full
+                        transition-transform duration-300 hover:scale-105 hover:opacity-90 hover:shadow-xl"
+            >
+              +
+            </button>
+          </div>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project, index) => (
               <ProjectCard
                 key={index}
                 title={project.title}
+                projectNumber={project.projectNumber}
                 therapeuticArea={project.therapeuticArea}
                 predictionType={project.predictionType}
                 value={project.value}
+                status={project.status}
+                dose={project.dose}
               />
             ))}
           </div>
         </section>
+        <AddDrugModal
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        onSubmit={handleAddDrug}/>
 
-        {/* Therapeutic Area Analysis */}
-        <section>
+      {/* Therapeutic Area Analysis */}
+      <section>
         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Therapeutic Area Analysis</h2>
           <TherapeuticChart />
         </section>
-      </div>
     </div>
   );
 };
