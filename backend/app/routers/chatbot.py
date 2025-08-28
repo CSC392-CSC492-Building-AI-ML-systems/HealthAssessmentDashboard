@@ -100,10 +100,15 @@ class SendMessageRequest(BaseModel):
 @router.post("/sessions/{session_id}/messages")
 async def send_message(
     session_id: int,
-    body: SendMessageRequest,
-    chatbot_service: ChatbotService = Depends(get_chatbot_service)
+    user_id: int = Form(...),
+    message: str = Form(...),
+    chatbot_service: ChatbotService = Depends(get_chatbot_service),
 ):
-    return await chatbot_service.send_message(session_id, body.user_id, body.message)
+    try:
+        return await chatbot_service.send_message(session_id, user_id, message)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
 
 # Get all messages in a chat session
 @router.get("/sessions/{session_id}/messages")
