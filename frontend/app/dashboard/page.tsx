@@ -6,8 +6,17 @@ import TherapeuticChart from "./TherapeuticChart";
 import DrugButton from "@/components/general/DrugButton";
 import React, { useEffect, useState } from "react";
 import { Pill, Syringe } from "lucide-react";
+import AddDrugModal, { NewDrugPayload } from "@/components/general/AddDrugModal";
+
 
 const Dashboard = () => {
+  // Modal stuff
+  const [showAdd, setShowAdd] = useState(false);
+
+  function handleAddDrug(data: NewDrugPayload) {
+    console.log("New internal drug:", data); 
+    // later: send to API/db
+  }
   const newsItems = [
     {
       title: "News #1",
@@ -66,10 +75,19 @@ const Dashboard = () => {
         {/* Internal Portfolio Predictions */}
         <section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Internal Portfolio Predictions</h2>
-        <div className="flex justify-end mb-6"> <DrugButton /> </div>
-        </div>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-[var(--foreground)]">
+              Internal Portfolio Predictions
+            </h2>
+            <button
+              onClick={() => setShowAdd(true)}   // toggles modal open
+              className="bg-[var(--button-red)] text-[var(--light-color)] px-3.5 py-2 rounded-full
+                        transition-transform duration-300 hover:scale-105 hover:opacity-90 hover:shadow-xl"
+            >
+              +
+            </button>
+          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project, index) => (
@@ -86,6 +104,10 @@ const Dashboard = () => {
             ))}
           </div>
         </section>
+        <AddDrugModal
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        onSubmit={handleAddDrug}/>
 
       {/* Therapeutic Area Analysis */}
       <section>
