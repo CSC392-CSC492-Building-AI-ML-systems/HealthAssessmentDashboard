@@ -101,3 +101,4 @@ python-multipart==0.0.20
 rsa==4.9.1
 sentinels==1.0.0
 bcrypt
+cohere

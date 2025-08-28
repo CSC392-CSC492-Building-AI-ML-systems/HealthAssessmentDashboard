@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Cookie
 
+from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
+
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -89,18 +92,23 @@ async def delete_chat(
 # Message endpoints
 # ─────────────────────────────────────────────
 
+class SendMessageRequest(BaseModel):
+    user_id: int
+    message: str
+
 # Add messages to a chat session
 @router.post("/sessions/{session_id}/messages")
 async def send_message(
     session_id: int,
     user_id: int = Form(...),
     message: str = Form(...),
-    chatbot_service: ChatbotService = Depends(get_chatbot_service)
+    chatbot_service: ChatbotService = Depends(get_chatbot_service),
 ):
     try:
         return await chatbot_service.send_message(session_id, user_id, message)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
 
 # Get all messages in a chat session
 @router.get("/sessions/{session_id}/messages")
