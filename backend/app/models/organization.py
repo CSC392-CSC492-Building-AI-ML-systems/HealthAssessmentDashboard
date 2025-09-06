@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Text, UniqueConstraint
 from app.models.base import Base, TimestampMixin, PKMixin
+from app.models.drug import organization_drug_association
 
 class Organization(Base, PKMixin, TimestampMixin):
     __tablename__ = "organizations"
@@ -15,3 +16,4 @@ class Organization(Base, PKMixin, TimestampMixin):
     )
 
     users = relationship("User", back_populates="organization")
+    drugs = relationship("Drug", secondary=organization_drug_association, back_populates="organizations")
