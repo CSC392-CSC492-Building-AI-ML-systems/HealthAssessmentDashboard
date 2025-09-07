@@ -28,7 +28,10 @@ export const chatbotApi = {
     for (let pair of formData.entries()) {
         console.log(pair[0]+ ', ' + pair[1]); 
     }
-
+    console.log("Sending message to chatbot:", {
+      user_id: userId,
+      message: message
+    });
     return httpClient<ChatMessage>(`/chat/sessions/${sessionId}/messages`, {
       method: 'POST',
       headers: { "Content-Type": "application/json" },

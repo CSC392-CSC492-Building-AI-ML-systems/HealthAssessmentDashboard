@@ -138,25 +138,25 @@ export const useSignupFlow = () => {
     firstName: string,
     lastName: string,
     password: string,
-    organization: OrganizationType,
+    // organization: OrganizationType,
     preferences?: UserPreferences
   ) => {
     setIsLoading(true);
 
     try {
       // Organization creation/selection
-      const organizationId = await handleOrganization(organization);
+      // const organizationId = await handleOrganization(/* organization */);
       
       // User account creation with organization ID
-      await createUserAccount(email, firstName, lastName, password, organizationId || undefined);
+      await createUserAccount(email, firstName, lastName, password, /* organizationId || */ undefined);
 
       if (preferences) {
         await saveUserPreferences(preferences);
       }
 
-      if (organizationId) {
-        await linkUserToOrganization(organizationId);
-      }
+      // if (organizationId) {
+      //   await linkUserToOrganization(organizationId);
+      // }
       
       showInfo('Signup successful! Redirecting...', 'Welcome!');
       setTimeout(() => {

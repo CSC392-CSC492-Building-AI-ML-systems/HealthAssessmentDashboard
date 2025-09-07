@@ -13,10 +13,10 @@ const Signup: React.FC = () => {
         firstName: string,
         lastName: string,
         password: string,
-        organization: OrganizationType,
+        // organization: OrganizationType,
         preferences?: UserPreferences
     ) => {
-        await handleSignup(email, firstName, lastName, password, organization, preferences);
+        await handleSignup(email, firstName, lastName, password, /* organization, */ preferences);
     };
 
     return (
