@@ -18,7 +18,7 @@ export default function ChatInput() {
   const hasOnlyBot =
     currentChat?.messages.length === 1 && currentChat.messages[0].role === "bot";
 
-  const showWelcomeHeading = hasNoMsgs || hasOnlyBot;
+  const showHeading = hasNoMsgs || hasOnlyBot;
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -73,7 +73,7 @@ export default function ChatInput() {
   return (
     <div className="w-full flex justify-center px-4 py-9 bg-[var(--main-body)] border-t-0">
       <div className="w-full max-w-4xl">
-        {showWelcomeHeading && (
+        {showHeading && (
           <div className="w-full max-w-4xl mx-auto text-center mb-4">
             <h1 className="text-2xl md:text-3xl font-sans">How can we help today?</h1>
           </div>
@@ -84,7 +84,7 @@ export default function ChatInput() {
             shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_6px_rgba(0,0,0,0.1)]
             dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(255,255,255,0.05),0_6px_12px_rgba(255,255,255,0.03)]"
         >
-          <button title="Add" className="hover:opacity-80 transition-opacity" onClick={() => {}}>
+          <button title="Add" className="hover:opacity-80 transition-opacity" onClick={() => { }}>
             <Plus className="w-5 h-5 text-[var(--input-text)]" />
           </button>
 
@@ -99,7 +99,7 @@ export default function ChatInput() {
             }}
           />
 
-          <button title="Voice" className="hover:opacity-80 transition-opacity" onClick={() => {}}>
+          <button title="Voice" className="hover:opacity-80 transition-opacity" onClick={() => { }}>
             <Mic className="w-5 h-5 text-[var(--input-text)]" />
           </button>
 

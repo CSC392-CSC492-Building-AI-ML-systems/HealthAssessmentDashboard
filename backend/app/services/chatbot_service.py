@@ -66,17 +66,18 @@ class ChatbotService:
         self.db.add(chat)
         await self.db.commit()
         await self.db.refresh(chat)
+        print(chat.__dict__)
         return chat
 
     async def get_sessions(self, user_id: int):
-        """Retrieve all chat sessions for a specific user"""
-        # Validate user exists
         await self._get_user(user_id)
-
         result = await self.db.execute(
             select(ChatHistory).where(ChatHistory.user_id == user_id)
         )
-        return result.scalars().all()
+        chats = result.scalars().all()
+
+        # Return only id and chat_summary
+        return chats
 
     async def get_session(self, session_id: int, user_id: int):
         """Retrieve a specific chat session by session_id and user_id"""

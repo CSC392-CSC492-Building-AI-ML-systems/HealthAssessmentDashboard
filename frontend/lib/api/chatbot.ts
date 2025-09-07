@@ -30,7 +30,7 @@ export const chatbotApi = {
    */
   listSessions: async (
     userId: number
-  ): Promise<ApiResponse<Array<{ id: number; chat_summary: string }>>> => {
+  ): Promise<ApiResponse<Array<any>>> => {
     return httpClient(`/chat/sessions?user_id=${encodeURIComponent(String(userId))}`);
   },
 
@@ -72,7 +72,7 @@ export const chatbotApi = {
       method: "PUT",
       body: formData,
     });
-  },  
+  },
 
   getChatHistory: async (): Promise<ApiResponse<ChatHistory>> => {
     return httpClient<ChatHistory>("/chatbot/history");

@@ -22,6 +22,10 @@ class ChatSessionResponse(ChatSessionBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+class ChatSessionListResponse(BaseModel):
+    id: int
+    chat_summary: str
+
 class ChatRequest(BaseModel):
     message: str
 

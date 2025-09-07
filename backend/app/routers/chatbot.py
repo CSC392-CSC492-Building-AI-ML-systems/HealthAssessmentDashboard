@@ -10,6 +10,8 @@ from fastapi import Cookie
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 
+from app.schemas.chatbot import ChatSessionListResponse
+
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -32,7 +34,7 @@ async def create_chat(
         raise HTTPException(status_code=404, detail=str(e))
     
 # List all chat sessions for a user
-@router.get("/sessions")
+@router.get("/sessions", response_model=List[ChatSessionListResponse])
 async def list_chats(
     user_id: int,
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
