@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { Pill, Syringe } from "lucide-react";
 import AddDrugModal from "@/components/general/AddDrugModal";
 import { NewDrugPayload } from "@/lib/api";
-import { drugApi } from "@/lib/api/drug";
+// import { drugApi } from "@/lib/api/drug";
 
 
 const Dashboard = () => {
@@ -18,8 +18,8 @@ const Dashboard = () => {
   async function handleAddDrug(data: NewDrugPayload) {
     console.log("New internal drug:", data);
 
-    const response = await drugApi.addDrug(data);
-    console.log(response.data)
+    // const response = await drugApi.addDrug(data);
+    // console.log(response.data)
   }
   const newsItems = [
     {

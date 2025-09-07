@@ -1,7 +1,15 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON, Float, Date
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON, Float, Date, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base, TimestampMixin, PKMixin
+
+# Join table for many-to-many relationship between Organization and Drug
+organization_drug_association = Table(
+    "organization_drug_association",
+    Base.metadata,
+    Column("organization_id", Integer, ForeignKey("organizations.id"), primary_key=True),
+    Column("drug_id", Integer, ForeignKey("drugs.id"), primary_key=True)
+)
 
 class Drug(Base, PKMixin, TimestampMixin):
     __tablename__ = "drugs"
@@ -33,6 +41,7 @@ class Drug(Base, PKMixin, TimestampMixin):
     # Relationships
     user = relationship("User", back_populates="drugs")
     files = relationship("DrugFile", back_populates="drug", cascade="all, delete-orphan")
+    organizations = relationship("Organization", secondary=organization_drug_association, back_populates="drugs")
 
 class DrugFile(Base):
     __tablename__ = "drug_files"

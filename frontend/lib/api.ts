@@ -13,7 +13,7 @@ export {
 } from './api/core/http-client';
 
 export { authApi } from './api/auth';
-export { organizationsApi } from './api/organizations';
+// export { organizationsApi } from './api/organizations';
 export { usersApi } from './api/users';
 export { chatbotApi } from './api/chatbot';
 

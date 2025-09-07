@@ -18,7 +18,6 @@ async def get_organization_service(db: AsyncSession = Depends(get_db)) -> Organi
 @router.post("/", response_model=OrganizationRead)
 async def create_organization(
     organization: OrganizationCreate,
-    current_user: User = Depends(get_current_user),
     organization_service: OrganizationService = Depends(get_organization_service)
 ):
     """Create a new organization"""

@@ -2,6 +2,7 @@ from pydantic import BaseModel, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from enum import Enum
+from app.schemas.organization import OrganizationRead
 
 class DrugType(str, Enum):
     BIOLOGIC = "biologic"
@@ -67,6 +68,7 @@ class DrugRead(DrugBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     files: List[DrugFileRead] = []
+    organizations: List[OrganizationRead] = []
 
     class Config:
         from_attributes = True

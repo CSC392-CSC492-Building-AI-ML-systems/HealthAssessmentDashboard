@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/general/ToastProvider';
 import { useAuth } from '@/hooks/useAuth';
-import { authApi, organizationsApi, usersApi } from '@/lib/api';
+import { authApi, usersApi } from '@/lib/api';
 import { extractErrorInfo, isSuccessResponse } from '../app/signup/utils/errorHandling';
 import type { ExistingOrganization, NewOrganization, UserPreferences } from '../app/signup/types';
 
@@ -49,48 +49,48 @@ export const useSignupFlow = () => {
   };
 
   // Organization creation/selection
-  const handleOrganization = async (organization: OrganizationType): Promise<number | null> => {
-    try {
-      if (isNewOrganization(organization)) {
-        const orgResult = await organizationsApi.createOrganization({
-          name: organization.name,
-          province: organization.province,
-          description: organization.description,
-        });
+  // const handleOrganization = async (organization: OrganizationType): Promise<number | null> => {
+  //   try {
+  //     if (isNewOrganization(organization)) {
+  //       const orgResult = await organizationsApi.createOrganization({
+  //         name: organization.name,
+  //         province: organization.province,
+  //         description: organization.description,
+  //       });
 
-        if (orgResult.data) {
-          return orgResult.data.id;
-        }
+  //       if (orgResult.data) {
+  //         return orgResult.data.id;
+  //       }
         
-        if (orgResult.status === 400) {
-          showWarning(
-            `Organization "${organization.name}" already exists in ${organization.province}`, 
-            'Organization Warning'
-          );
-        } else {
-          showWarning(
-            `Failed to create organization: ${orgResult.error || 'Unknown error'}`, 
-            'Organization Warning'
-          );
-        }
-        return null;
-      }
+  //       if (orgResult.status === 400) {
+  //         showWarning(
+  //           `Organization "${organization.name}" already exists in ${organization.province}`, 
+  //           'Organization Warning'
+  //         );
+  //       } else {
+  //         showWarning(
+  //           `Failed to create organization: ${orgResult.error || 'Unknown error'}`, 
+  //           'Organization Warning'
+  //         );
+  //       }
+  //       return null;
+  //     }
 
-      const orgResult = await organizationsApi.getOrganizationByName(organization.name);
-      if (orgResult.data && Array.isArray(orgResult.data) && orgResult.data.length > 0) {
-        const match = orgResult.data.find((org: any) => org.name === organization.name);
-        if (match) {
-          return match.id;
-        }
-      }
-      showWarning(`Could not find organization "${organization.name}"`, 'Organization Warning');
-      return null;
-    } catch (error) {
-      const { message } = extractErrorInfo(error);
-      showWarning(`Organization processing failed: ${message}`, 'Organization Warning');
-      return null;
-    }
-  };
+  //     const orgResult = await organizationsApi.getOrganizationByName(organization.name);
+  //     if (orgResult.data && Array.isArray(orgResult.data) && orgResult.data.length > 0) {
+  //       const match = orgResult.data.find((org: any) => org.name === organization.name);
+  //       if (match) {
+  //         return match.id;
+  //       }
+  //     }
+  //     showWarning(`Could not find organization "${organization.name}"`, 'Organization Warning');
+  //     return null;
+  //   } catch (error) {
+  //     const { message } = extractErrorInfo(error);
+  //     showWarning(`Organization processing failed: ${message}`, 'Organization Warning');
+  //     return null;
+  //   }
+  // };
 
   // Save user preferences
   const saveUserPreferences = async (preferences: UserPreferences): Promise<boolean> => {
@@ -138,25 +138,25 @@ export const useSignupFlow = () => {
     firstName: string,
     lastName: string,
     password: string,
-    organization: OrganizationType,
+    // organization: OrganizationType,
     preferences?: UserPreferences
   ) => {
     setIsLoading(true);
 
     try {
       // Organization creation/selection
-      const organizationId = await handleOrganization(organization);
+      // const organizationId = await handleOrganization(/* organization */);
       
       // User account creation with organization ID
-      await createUserAccount(email, firstName, lastName, password, organizationId || undefined);
+      await createUserAccount(email, firstName, lastName, password, /* organizationId || */ undefined);
 
       if (preferences) {
         await saveUserPreferences(preferences);
       }
 
-      if (organizationId) {
-        await linkUserToOrganization(organizationId);
-      }
+      // if (organizationId) {
+      //   await linkUserToOrganization(organizationId);
+      // }
       
       showInfo('Signup successful! Redirecting...', 'Welcome!');
       setTimeout(() => {
