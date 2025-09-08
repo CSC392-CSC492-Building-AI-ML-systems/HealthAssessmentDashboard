@@ -7,8 +7,9 @@ const Home: React.FC = () => {
     const router = useRouter();
 
     useEffect(() => {
-        router.push('/landing');
-    }, [router]);
+        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+        router.replace(token ? "/dashboard" : "/landing");
+      }, [router]);
 
     return <div />;
 }
