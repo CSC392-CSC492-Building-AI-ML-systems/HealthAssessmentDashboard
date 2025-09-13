@@ -1,16 +1,21 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Home: React.FC = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    useEffect(() => {
-        router.push('/landing');
-    }, [router]);
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null;
 
-    return <div />;
-}
+    router.replace(token ? "/dashboard" : "/landing");
+  }, [router]);
+
+  return <div />;
+};
 
 export default Home;
