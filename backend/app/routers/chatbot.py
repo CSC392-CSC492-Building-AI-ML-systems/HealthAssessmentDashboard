@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends, H
 from typing import List
 from app.services.chatbot_service import ChatbotService
 from app.services.auth_service import AuthService
-from app.db.sqlite import SessionLocal, get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Cookie

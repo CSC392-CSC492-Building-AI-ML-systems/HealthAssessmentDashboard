@@ -1,6 +1,8 @@
 aiosqlite==0.21.0
+aiofiles
 annotated-types==0.7.0
 anyio==4.9.0
+asyncpg
 attrs==25.3.0
 azure-core==1.34.0
 azure-storage-blob==12.25.1
@@ -19,7 +21,7 @@ distro==1.9.0
 dnspython==2.7.0
 ecdsa==0.19.1
 email_validator==2.2.0
-faiss-cpu==1.11.0
+faiss-cpu==1.9.0
 fastapi==0.115.13
 filelock==3.18.0
 greenlet==3.2.2
@@ -35,6 +37,7 @@ joblib==1.5.1
 jose==1.0.0
 lazy-model==0.2.0
 loguru==0.7.3
+mangum
 motor==3.7.1
 multipledispatch==1.0.0
 natsort==8.4.0
@@ -53,7 +56,6 @@ platformdirs==4.3.8
 playwright==1.52.0
 pluggy==1.6.0
 pre_commit==4.2.0
-psycopg2==2.9.10
 pyasn1==0.6.1
 pycparser==2.22
 pycryptodome==3.23.0

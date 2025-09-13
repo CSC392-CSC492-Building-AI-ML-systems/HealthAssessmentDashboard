@@ -3,7 +3,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import JSONResponse
 
-from app.db.sqlite import get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 from app.schemas.user import UserCreate, UserRead
 from app.services.auth_service import AuthService
 from app.core.config import settings

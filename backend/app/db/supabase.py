@@ -3,15 +3,10 @@ from app.core.config import settings
 from typing import AsyncGenerator
 from app.models.base import Base
 
-engine = create_async_engine(settings.sqlite_path, echo=False)
+engine = create_async_engine(settings.supabase_database_path, echo=False)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
-# DEPRECATED FUNCTIONS --> NOW USING SUPABASE
-async def init_sqlite_db() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-async def get_sqlite_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
         try:
             yield session

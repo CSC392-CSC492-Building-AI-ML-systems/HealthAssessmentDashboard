@@ -13,7 +13,8 @@ from fastapi.security import OAuth2PasswordBearer
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.core.config import settings
-from app.db.sqlite import get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 
 # Configure password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

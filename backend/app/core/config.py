@@ -5,6 +5,8 @@ from typing import Optional
 class Settings(BaseSettings):
     app_name: str
     sqlite_path: str
+    supabase_database_path: str
+    env_name: str = "LOCAL"
     jwt_secret_key: str
     jwt_access_token_expire_minutes: int = 60
     jwt_refresh_token_expire_days: int = 7

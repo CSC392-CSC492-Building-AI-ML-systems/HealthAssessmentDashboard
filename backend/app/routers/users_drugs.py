@@ -4,7 +4,8 @@ from typing import List, Optional
 import json
 
 from app.models.user import User
-from app.db.sqlite import get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 from app.schemas.drug import DrugCreate, DrugRead, DrugUpdate, DrugListItem
 from app.services.auth_service import get_current_user
 from app.services.drug_service import DrugService

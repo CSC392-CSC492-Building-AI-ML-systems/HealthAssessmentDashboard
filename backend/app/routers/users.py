@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
 from app.models.user import User
-from app.db.sqlite import get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 from app.schemas.user import UserRead, UserUpdate
 from app.schemas.user_preferences import UserPreferencesCreate, UserPreferencesRead
 from app.services.auth_service import get_current_user

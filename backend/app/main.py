@@ -1,19 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from app.db.sqlite import init_db as sqlite_init
 from app.routers import users, auth, chatbot, organizations, users_drugs
 from app.core.config import settings
 import app.models
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await sqlite_init()
-    yield
+app = FastAPI(title=settings.app_name, debug=settings.debug)
 
-app = FastAPI(title=settings.app_name, lifespan=lifespan, debug=settings.debug)
-
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

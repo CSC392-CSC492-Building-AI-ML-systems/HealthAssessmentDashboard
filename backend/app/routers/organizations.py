@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
-from app.db.sqlite import get_db
+from app.db.sqlite import get_sqlite_db
+from app.db.supabase import get_db
 from app.schemas.organization import OrganizationCreate, OrganizationRead, OrganizationUpdate
 from app.services.auth_service import get_current_user
 from app.services.organization_service import OrganizationService
