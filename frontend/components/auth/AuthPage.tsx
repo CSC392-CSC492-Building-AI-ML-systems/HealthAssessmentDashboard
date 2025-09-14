@@ -59,6 +59,7 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
     "Ophthalmology",
   ];
 
+
   function resetAuthForm(type: "signup" | "login") {
     if (type === "signup") {
       setEmail("");
