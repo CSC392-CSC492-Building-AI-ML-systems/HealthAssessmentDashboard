@@ -10,7 +10,7 @@ type AuthMode = "login" | "signup";
 
 interface AuthFormProps {
   mode: AuthMode;
-  onSignup: (
+  onSignup?: (
     email: string,
     firstName: string,
     lastName: string,
@@ -105,18 +105,21 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
 
-    onSignup(
-      email.trim(),
-      firstName.trim(),
-      lastName.trim(),
-      password,
-      {
-        selected: preferences,
-        custom: customPreference.trim(),
-      }
-    );
+    if (onSignup) {
 
-    resetAuthForm("signup");
+      onSignup(
+        email.trim(),
+        firstName.trim(),
+        lastName.trim(),
+        password,
+        {
+          selected: preferences,
+          custom: customPreference.trim(),
+        }
+      );
+
+      resetAuthForm("signup");
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -165,9 +168,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                       placeholder="name@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                        errors.email ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.email ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
+                        }`}
                       style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                     />
                     {errors.email && <p className="text-red-500 mt-2 text-sm">{errors.email}</p>}
@@ -185,9 +187,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                         placeholder="••••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                          errors.password ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
-                        }`}
+                        className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.password ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
+                          }`}
                         style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                       />
                       <button
@@ -219,9 +220,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                           placeholder="name@email.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                            errors.email ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
-                          }`}
+                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.email ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
+                            }`}
                           style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                         />
                         {errors.email && <p className="text-red-500 mt-2 text-sm">{errors.email}</p>}
@@ -237,9 +237,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                           placeholder="John"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                            errors.firstName ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
-                          }`}
+                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.firstName ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
+                            }`}
                           style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                         />
                         {errors.firstName && <p className="text-red-500 mt-2 text-sm">{errors.firstName}</p>}
@@ -255,9 +254,8 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                           placeholder="Doe"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                            errors.lastName ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
-                          }`}
+                          className={`w-full px-4 py-3 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.lastName ? "border-2 border-red-500 focus:ring-red-500" : "focus:ring-[var(--button-red)]"
+                            }`}
                           style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                         />
                         {errors.lastName && <p className="text-red-500 mt-2 text-sm">{errors.lastName}</p>}
@@ -275,11 +273,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                             placeholder="••••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                              errors.password
-                                ? "border-2 border-red-500 focus:ring-red-500"
-                                : "focus:ring-[var(--button-red)]"
-                            }`}
+                            className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.password
+                              ? "border-2 border-red-500 focus:ring-red-500"
+                              : "focus:ring-[var(--button-red)]"
+                              }`}
                             style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                           />
                           <button
@@ -305,11 +302,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                             placeholder="••••••••••"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${
-                              errors.confirmPassword
-                                ? "border-2 border-red-500 focus:ring-red-500"
-                                : "focus:ring-[var(--button-red)]"
-                            }`}
+                            className={`w-full px-4 py-3 pr-12 rounded-lg shadow-md focus:outline-none focus:ring-2 ${errors.confirmPassword
+                              ? "border-2 border-red-500 focus:ring-red-500"
+                              : "focus:ring-[var(--button-red)]"
+                              }`}
                             style={{ backgroundColor: "white", color: "var(--brand-dark)", fontFamily: "var(--font-body)" }}
                           />
                           <button
@@ -335,11 +331,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                             <button
                               key={pref}
                               type="button"
-                              className={`px-3 py-1 rounded-full border font-medium transition ${
-                                preferences.includes(pref)
-                                  ? "bg-[var(--button-red)] text-white border-transparent"
-                                  : "bg-white text-[var(--brand-dark)] border-gray-300"
-                              }`}
+                              className={`px-3 py-1 rounded-full border font-medium transition ${preferences.includes(pref)
+                                ? "bg-[var(--button-red)] text-white border-transparent"
+                                : "bg-white text-[var(--brand-dark)] border-gray-300"
+                                }`}
                               onClick={() =>
                                 setPreferences((prev) =>
                                   prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]
@@ -385,11 +380,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className={`w-full py-2 rounded text-white font-semibold duration-300 transition ${
-                          isLoading
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
-                        }`}
+                        className={`w-full py-2 rounded text-white font-semibold duration-300 transition ${isLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
+                          }`}
                       >
                         {isLoading ? (
                           <span className="flex items-center justify-center gap-2">
@@ -410,11 +404,10 @@ const AuthPage: React.FC<AuthFormProps> = ({ mode, onSignup, onLogin, isLoading 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-2 rounded text-white font-semibold duration-300 transition ${
-                    isLoading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
-                  }`}
+                  className={`w-full py-2 rounded text-white font-semibold duration-300 transition ${isLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[var(--button-onhover-red)] hover:bg-[var(--button-red)] hover:shadow-xl cursor-pointer"
+                    }`}
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
