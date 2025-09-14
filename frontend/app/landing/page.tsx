@@ -9,16 +9,6 @@ import Summary from "@/components/landing/Summary";
 import FeatureOverview from "@/components/landing/FeatureOverview";
 
 const Landing: React.FC = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null;
-
-    if (token) router.replace("/dashboard");
-  }, [router]);
 
   return (
     <div>
