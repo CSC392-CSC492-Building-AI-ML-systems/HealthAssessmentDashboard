@@ -47,8 +47,7 @@ def serialize_user_data(user) -> dict:
         "id": user.id,
         "email": user.email,
         "first_name": user.first_name,
-        "last_name": user.last_name,
-        "organization_id": user.organization_id
+        "last_name": user.last_name
     }
 
 @router.post("/signup", response_model=dict)

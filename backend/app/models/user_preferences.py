@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String, JSON, Text
 from app.models.base import Base, PKMixin, TimestampMixin
+from typing import Optional
 
 class UserPreferences(Base, PKMixin, TimestampMixin):
     __tablename__ = "user_preferences"
@@ -14,4 +15,4 @@ class UserPreferences(Base, PKMixin, TimestampMixin):
     therapeutic_areas: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     
     # News preferences as text
-    news_preferences: Mapped[str | None] = mapped_column(Text, nullable=True)
+    news_preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

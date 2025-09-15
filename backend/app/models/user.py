@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String
 from app.models.base import Base, TimestampMixin, PKMixin
+from typing import Optional
 
 class User(Base, PKMixin, TimestampMixin):
     __tablename__ = "users"
@@ -10,10 +11,10 @@ class User(Base, PKMixin, TimestampMixin):
     last_name: Mapped[str] = mapped_column(String)
     password_hash: Mapped[str] = mapped_column(String)
 
-    organization_id: Mapped[int | None] = mapped_column(
-        ForeignKey("organizations.id"), index=True
-    )
-    organization = relationship("Organization", back_populates="users")
+    # organization_id: Mapped[Optional[int]] = mapped_column(
+    #     ForeignKey("organizations.id"), index=True
+    # )
+    # organization = relationship("Organization", back_populates="users")
 
     # FOR NOW, A USER HAS ONE UserPreferences OBJECT; COULD CHANGE LATER IF PREFERENCES ARE MORE INTRICATE THAN A STRING SUMMARY
     user_preferences = relationship(
