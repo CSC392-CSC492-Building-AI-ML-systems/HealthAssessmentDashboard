@@ -85,7 +85,7 @@ def load_embeddings(user_id: int = None):
 
     # CHECK IF THE INDEX FILE EXISTS LOCALLY
     try:
-        faiss_index = faiss.read_index(index_path)
+        faiss_index = faiss.read_index(index_path, faiss.IO_FLAG_MMAP)
         with open(metadata_path, "rb") as f:
             metadata = pickle.load(f)
         print(f"Loaded {faiss_index.ntotal} vectors from local FAISS index.", flush=True)
