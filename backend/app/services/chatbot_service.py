@@ -33,7 +33,11 @@ class ChatbotService:
 
     async def _get_user(self, user_id: int) -> User:
         """Helper to get and validate user existence."""
+        print(user_id)
+        print("TYPE", type(user_id))
+        print("EXECUTING GET USER")
         result = await self.db.execute(select(User).where(User.id == user_id))
+        print("EXECUTED GET USER")
         user = result.scalar_one_or_none()
         if not user:
             raise ValueError("User not found")
