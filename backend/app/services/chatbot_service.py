@@ -219,7 +219,7 @@ class ChatbotService:
         """
         # 1) Classify the query.
         print("Getting intents")
-        intents = intent_classifier(query)
+        # intents = intent_classifier(query)
         intents = [IntentEnum.VECTORDB]
         print("Got intents", intents)
         intents = [IntentEnum.VECTORDB]
