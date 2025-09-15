@@ -3,7 +3,7 @@
  */
 
 // Configuration
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = 'http://[2600:1f11:40d:c1da:53c9:84f7:fcd9:799c]:8000'
 
 // Error types for better error handling
 export class ApiError extends Error {
