@@ -29,6 +29,8 @@ async def create_chat(
     chatbot_service: ChatbotService = Depends(get_chatbot_service)
 ):
     try:
+        # TYPE CAST FOR SAFETY, OTHERWISE POSTGRES COMPLAINS
+        user_id = int(user_id)
         # user_id = chatbot_service.verify_token(refresh_token, "refresh")
         return await chatbot_service.create_chat(user_id, title)
     except ValueError as e:
